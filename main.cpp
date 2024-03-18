@@ -11,13 +11,12 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <sys/stat.h>
 
 void handleError(std::string errMsg)
 {
     fprintf(stderr, "오류 발생: %s\n", strerror(errno));
     std::cout << errMsg << std::endl;
-    std::exit(1);
+    std::exit(0);
 }
 
 void makeNonBlock(int fd)
@@ -29,11 +28,11 @@ void makeNonBlock(int fd)
 int main()
 {
     // 소켓(엔드포인트) 할당 받음
-    int socketFd = socket(PF_INET, SOCK_STREAM, 0); //IPV4 인터텟 프로토콜(프로토콜 패밀리), TCP 스트림
+    int socketFd = socket(PF_INET, SOCK_STREAM, 0); // IPV4 인터텟 프로토콜(프로토콜 패밀리), TCP 스트림
     if (socketFd == -1)
         handleError("socket Error");
 
-    // reuseaddr 처리
+    // reuseaddr 처리 -> 나중에는 지우는게 나을듯?
     int reuse = 1;
     if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) < 0)
         handleError("setsockopt(SO_REUSEADDR) failed");
@@ -52,14 +51,16 @@ int main()
 
     // kqueue를 위한 FD할당받음
     int kqueueFd = kqueue();
+    if (kqueueFd == -1)
+        handleError("kqueue");
 
     // 등록하고 싶은 FD를 change_list에 담으면 됨!
     std::vector<struct kevent> change_list;
 
     // listen하고있는 소켓 FD를 변경을 감지할 change_list에 등록
-    struct kevent temp_event;
-    EV_SET(&temp_event, socketFd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-    change_list.push_back(temp_event);
+    struct kevent tempEvent;
+    EV_SET(&tempEvent, socketFd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+    change_list.push_back(tempEvent);
 
     std::map<int, std::string> clients;
     while (1)
@@ -74,6 +75,10 @@ int main()
         for (int i = 0; i < new_events; i++) // 이벤트가 일어난 횟수만큼 순회한다.
         {
             struct kevent *curr_event = &event_list[i];
+            // 리소스 부족같은 경우 체크
+            if (curr_event->flags & EV_ERROR)
+                handleError("EV_ERROR");
+
             if (curr_event->filter == EVFILT_READ) // 읽을 수 있는 데이터가 있을때 이벤트 발생
             {
                 // listen하고 있는 소켓에 이벤트 발생
@@ -83,26 +88,34 @@ int main()
                     int clientSocket = accept(socketFd, NULL, NULL);
                     makeNonBlock(clientSocket);
                     // 클라이언트 소켓을 change_list에 등록해 클라이언트의 읽기이벤트를 감지함
-                    EV_SET(&temp_event, clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-                    clients[clientSocket] = ""; //내부 자료구조에 클라이언트 소켓을 추가
-                    change_list.push_back(temp_event);
+                    EV_SET(&tempEvent, clientSocket, EVFILT_READ, EV_ADD, 0, 0, NULL);
+                    clients[clientSocket] = ""; // 내부 자료구조에 클라이언트 소켓을 추가
+                    change_list.push_back(tempEvent);
                 }
                 else if (clients.find(curr_event->ident) != clients.end()) // 클라이언트 소켓이라면
                 {
+                    // 읽을수 있는 데이터가 몇바이트인지 알 수 있다.
+                    // 이 정보는 안써도 될것같긴함
+                    // std::cout << "data byte : " << curr_event->data << std::endl;
                     int clientSocket = curr_event->ident;
                     char buf[1000];
                     int n = read(clientSocket, buf, sizeof(buf));
-                    if (n == 0) // EOF왔을때 인듯? 클라이언트 종료처리
+                    if (n != 0)
                     {
-                        close(clientSocket); //클라이언트 소켓 close
-                        clients.erase(clientSocket); //클라이언트 소켓 
-                        std::cout << "client disconnect " << clientSocket << "\n";
-                        break;
+                        clients[clientSocket] = std::string(buf, n);
+                        std::cout << "client say : " << clients[clientSocket];
                     }
-                    clients[clientSocket] = std::string(buf, n);
-                    std::cout << "client say : " << clients[clientSocket];
-                    EV_SET(&temp_event, clientSocket, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-                    change_list.push_back(temp_event);
+                    if (curr_event->flags & EV_EOF) // 클라이언트가 소켓 닫은 경우
+                    {
+                        close(clientSocket);         // 클라이언트 소켓 close
+                        clients.erase(clientSocket); // 클라이언트 자료구조 삭제
+                        std::cout << "client disconnect " << clientSocket << "\n";
+                    }
+                    else
+                    {
+                        EV_SET(&tempEvent, clientSocket, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+                        change_list.push_back(tempEvent);
+                    }
                 }
             }
             else if (curr_event->filter == EVFILT_WRITE) // 쓸 수 있는 상태일때 이벤트 발생
@@ -110,14 +123,24 @@ int main()
                 if (clients.find(curr_event->ident) != clients.end()) // 클라이언트 소켓이라면 -> 사실이거밖에없음
                 {
                     int clientSocket = curr_event->ident;
-                    write(clientSocket, clients[clientSocket].data(), clients[clientSocket].size()); //클라이언트 소켓에 write
+                    // 쓸수있는 데이터가 몇 바이트인지알 수 있다.
+                    // 만약 내가 쓰고싶은 공간의 크기가 쓸 수있는 크기보다 작다면?
+                    // 여러번 써야할듯
+                    std::cout << "쓸수있는 공간의 크기 : " << curr_event->data << std::endl;
+                    write(clientSocket, clients[clientSocket].data(), clients[clientSocket].size()); // 클라이언트 소켓에 write
                     clients[curr_event->ident].clear();
+
+                    EV_SET(&tempEvent, clientSocket, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+                    change_list.push_back(tempEvent);
                 }
-            }
-            else if (curr_event->flags == EV_ERROR) // 에러가 났을때 발생하는 것 같긴한데, 정확한거는 공식문서 다시 봐야함
-            {
             }
         }
     }
+
+    // clean
+    // close(kqueueFd);
+    // close(socketFd);
+    // close client socket
+    //~~ close client vector~~
     return 0;
 }
