@@ -11,6 +11,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <cstdlib>
 
 void handleError(std::string errMsg)
 {
@@ -25,8 +26,33 @@ void makeNonBlock(int fd)
         handleError("fcntl Error");
 }
 
-int main()
+bool isValidNum(std::string arg)
 {
+    for (int i = 0; i < arg.size(); i++)
+    {
+        if (!std::isdigit(arg[i]))
+            return false;
+    }
+    // 포트에 0을 넣으면 서버가 작동하나 클라이언트 연결이 안된다.
+    // 서치해보니 포트가 0이면 임의의 가용한 포트를 사용하는것으로 보인다.
+    if (arg.compare("0") == 0)
+        return false;
+    return true;
+}
+
+bool isValidInput(int argc, char **argv)
+{
+    return (argc != 3 || !isValidNum(argv[1]));
+}
+
+int main(int argc, char **argv)
+{
+    if (isValidInput(argc, argv))
+        handleError("invalid port input");
+    int port = std::atoi(argv[1]);
+    std::string password = std::string(argv[2]);
+    std::cout << "포트 : " << port << " 비밀번호 : " << password << std::endl;
+
     // 소켓(엔드포인트) 할당 받음
     int socketFd = socket(PF_INET, SOCK_STREAM, 0); // IPV4 인터텟 프로토콜(프로토콜 패밀리), TCP 스트림
     if (socketFd == -1)
@@ -42,7 +68,7 @@ int main()
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;                                        // IPV4 인터텟 프로토콜(주소 패밀리)
-    addr.sin_port = htons(12345);                                     // listen할 포트 지정
+    addr.sin_port = htons(port);                                      // listen할 포트 지정
     addr.sin_addr.s_addr = htonl(INADDR_ANY);                         // address에 관계없이 동작함
     if (bind(socketFd, (struct sockaddr *)&addr, sizeof(addr)) == -1) // 해당 주소와 포트에 바인드
         handleError("bind Error");
@@ -126,7 +152,7 @@ int main()
                     // 쓸수있는 데이터가 몇 바이트인지알 수 있다.
                     // 만약 내가 쓰고싶은 공간의 크기가 쓸 수있는 크기보다 작다면?
                     // 여러번 써야할듯
-                    std::cout << "쓸수있는 공간의 크기 : " << curr_event->data << std::endl;
+                    // std::cout << "쓸수있는 공간의 크기 : " << curr_event->data << std::endl;
                     write(clientSocket, clients[clientSocket].data(), clients[clientSocket].size()); // 클라이언트 소켓에 write
                     clients[curr_event->ident].clear();
 
