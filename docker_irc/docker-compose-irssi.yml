@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  irc_client:
+    image: irssi_client
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: irssi_client
+    network_mode: "host"
+    command: ["/usr/sbin/inspircd", "--runasroot", "--nofork"]
+
+# 클라이언트와 호스트 PC를 연결해 패킷을 관찰 싶을때 사용한다.
+
+# 도커 컨테이너를 올린다.
+# docker compose -f docker-compose-irssi.yml up -d
+
+# irssi 패킷 관찰
+# docker exec -it irssi_client bash 
+# tcpflow port 12345 -c
+
+# irssi 클라이언트 실행
+# docker exec -it irssi_client bash 
+# irssi
+# /connect -nocap host.docker.internal 12345
+
+# 도커 컨테이너를 내린다.
+# docker compose -f docker-compose-irssi.yml down

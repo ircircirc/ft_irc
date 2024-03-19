@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  irc:
+    image: irc
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: irc
+    command: ["/usr/sbin/inspircd", "--runasroot", "--nofork"]
+
+# 상용 서버와 상용 클라이언트의 패킷을 관찰하고 싶을때 사용한다.
+
+# 도커 컨테이너를 올린다.
+# docker compose up -d
+
+# irssi 패킷 관찰
+# docker exec -it irc bash
+# tcpflow -i lo port 6667 -c
+
+# irssi 클라이언트 실행
+# docker exec -it irc bash
+# irssi
+# /connect -nocap 127.0.0.1 6667
+
+# 도커 컨테이너를 내린다.
+# docker compose down
