@@ -22,7 +22,7 @@ services:
 # irssi 클라이언트 실행
 # docker exec -it irssi_client bash 
 # irssi
-# /connect -nocap host.docker.internal 12345
+# /connect -nocap host.docker.internal 12345 password
 
 # 도커 컨테이너를 내린다.
 # docker compose -f docker-compose-irssi.yml down

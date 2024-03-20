@@ -21,7 +21,7 @@ services:
 # irssi 클라이언트 실행
 # docker exec -it irc bash
 # irssi
-# /connect -nocap 127.0.0.1 6667
+# /connect -nocap 127.0.0.1 6667 your_password
 
 # 도커 컨테이너를 내린다.
 # docker compose down
