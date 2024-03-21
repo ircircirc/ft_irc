@@ -7,19 +7,19 @@ bool isValidNum(std::string arg)
         if (!std::isdigit(arg[i]))
             return false;
     }
-    if (arg.compare("0") == 0)
+    if (arg.size() > 1 && arg[0] == '0')
         return false;
     return true;
 }
 
 bool isValidInput(int argc, char **argv)
 {
-    return (argc != 3 || !isValidNum(argv[1]));
+    return (argc == 3 && isValidNum(argv[1]));
 }
 
 void ConfigManager::setConifg(int argc, char **argv)
 {
-    if (isValidInput(argc, argv))
+    if (!isValidInput(argc, argv))
         handleError("invalid port input");
     port = std::atoi(argv[1]);
     password = std::string(argv[2]);
@@ -37,8 +37,7 @@ void ConfigManager::listenSocket()
         handleError("setsockopt(SO_REUSEADDR) failed");
     ////////////////////////////////////////////////////////////
     makeNonBlock(listenFd);
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
+    struct sockaddr_in addr = {};
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);

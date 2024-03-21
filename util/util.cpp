@@ -10,26 +10,24 @@ std::vector<std::string> split(const std::string &str, const std::string &del)
     {
         std::string token = str.substr(start, end - start);
         if (!token.empty())
-        {
             tokens.push_back(token);
-        }
         start = end + del.length();
     }
 
     std::string lastToken = str.substr(start);
     if (!lastToken.empty())
-    {
         tokens.push_back(lastToken);
-    }
-
     return tokens;
 }
 
 void handleError(std::string errMsg)
 {
-    std::cout << "오류 발생: " << strerror(errno) << std::endl;
-    std::cout << errMsg << std::endl;
-    std::exit(0);
+    std::cerr << "오류 발생: " << strerror(errno) << std::endl;
+    if (!errMsg.empty()) // 빈문자열 "" 처리
+        std::cerr << errMsg << std::endl;
+    else
+        std::cerr << "An unspecified error occurred." << std::endl;
+    std::exit(EXIT_FAILURE);
 }
 
 void makeNonBlock(int fd)
