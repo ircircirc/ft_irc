@@ -13,37 +13,43 @@
 #include <string>
 #include <cstdlib>
 
-void handleError(std::string errMsg)
+void handleError(const std::string& errMsg)
 {
-    fprintf(stderr, "오류 발생: %s\n", strerror(errno));
-    std::cout << errMsg << std::endl;
-    std::exit(0);
+    std::cerr << "오류 발생: " << strerror(errno) << std::endl;
+    if (!errMsg.empty())		// 빈문자열 "" 처리
+	{
+		std::cerr << errMsg << std::endl;
+    } else {
+		std::cerr << "An unspecified error occurred." << std::endl;
+    }
+    std::exit(EXIT_FAILURE); 
 }
 
 void makeNonBlock(int fd)
 {
-    if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
-        handleError("fcntl Error");
+	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
+		handleError("fcntl Error");
 }
 
 bool isValidNum(std::string arg)
 {
-    for (int i = 0; i < arg.size(); i++)
-    {
-        if (!std::isdigit(arg[i]))
-            return false;
-    }
-    // 포트에 0을 넣으면 서버가 작동하나 클라이언트 연결이 안된다.
-    // 서치해보니 포트가 0이면 임의의 가용한 포트를 사용하는것으로 보인다.
-    if (arg.compare("0") == 0)
-        return false;
-    return true;
+	if (arg.empty())	// 빈문자열 "" 처리
+    	return false;
+	for (int i = 0; i < arg.size(); i++)
+	{
+		if (!std::isdigit(arg[i]))
+			return false;
+	}
+	if (arg.size() > 1 && arg[0] == '0')
+	    return false;
+	return true;
 }
 
 bool isValidInput(int argc, char **argv)
 {
-    return (argc != 3 || !isValidNum(argv[1]));
+	return (argc == 3 && isValidNum(argv[1]));
 }
+// <<< 여기까지 수정 (Mar 21 14:07)
 
 int main(int argc, char **argv)
 {
@@ -65,8 +71,8 @@ int main(int argc, char **argv)
 
     // non-block io를 위해 non-blocking 처리
     makeNonBlock(socketFd);
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
+    struct sockaddr_in addr = {};
+    // memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;                                        // IPV4 인터텟 프로토콜(주소 패밀리)
     addr.sin_port = htons(port);                                      // listen할 포트 지정
     addr.sin_addr.s_addr = htonl(INADDR_ANY);                         // address에 관계없이 동작함
