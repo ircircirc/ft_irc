@@ -26,3 +26,6 @@ services:
 
 # 도커 컨테이너를 내린다.
 # docker compose -f docker-compose-irssi.yml down
+
+# nc로 수제로 연결할때
+# nc host.docker.internal 12345
