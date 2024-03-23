@@ -1,5 +1,6 @@
 #include "util.hpp"
 
+
 std::vector<std::string> split(const std::string &str, const std::string &del)
 {
     std::vector<std::string> tokens;
@@ -34,4 +35,26 @@ void makeNonBlock(int fd)
 {
     if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
         handleError("fcntl Error");
+}
+
+void printEventTypes(const std::vector<struct kevent> &change_list)
+{
+    for (int i = 0; i < change_list.size(); i++)
+    {
+        struct kevent kev = change_list[i];
+        std::cout << "Event for fd " << kev.ident << ": ";
+        switch (kev.filter)
+        {
+        case EVFILT_READ:
+            std::cout << "READ";
+            break;
+        case EVFILT_WRITE:
+            std::cout << "WRITE";
+            break;
+        default:
+            std::cout << "UNKNOWN";
+            break;
+        }
+        std::cout << std::endl;
+    }
 }

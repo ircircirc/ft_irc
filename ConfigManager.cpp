@@ -9,6 +9,8 @@ ConfigManager::ConfigManager(int argc, char **argv)
 
 void ConfigManager::routine()
 {
+    //현재 이벤트 출력 하는 함수
+    printEventTypes(change_list);
     struct kevent event_list[8];
     int new_events = kevent(kqueueFd, &change_list[0], change_list.size(), event_list, 8, NULL);
     if (new_events == -1)
@@ -37,7 +39,10 @@ void ConfigManager::checkRegister(int clientFd)
     {
         if (password.compare(unregisterMember.password) != 0)
         {
-            clearMember(clientFd);
+            serverToClientMsg[clientFd] += std::string("ERROR :Closing link: [Access denied by configuration]\r\n");
+            unregisterMemberMap[clientFd].pendingCloseSocket = true;
+            EV_SET(&tempEvent, clientFd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+            change_list.push_back(tempEvent);
             return;
         }
         welcomeMember(clientFd);
@@ -159,7 +164,9 @@ void ConfigManager::handleReadEvent(struct kevent *curr_event)
             processMessageBuffer(clientsToServerMsg[clientSocket], clientSocket);
         }
         if (curr_event->flags & EV_EOF)
+        {
             clearMember(clientSocket);
+        }
     }
 }
 
@@ -168,9 +175,18 @@ void ConfigManager::handleWriteEvent(struct kevent *curr_event)
     if (serverToClientMsg.find(curr_event->ident) != serverToClientMsg.end())
     {
         int clientSocket = curr_event->ident;
+
         // 쓸수있는 데이터가 몇 바이트인지알 수 있다. 추후 처리 고려(한번에 데이터 다 못보냈을때)
         write(clientSocket, serverToClientMsg[clientSocket].data(), serverToClientMsg[clientSocket].size());
         serverToClientMsg[curr_event->ident].clear();
+
+        // 메시지 보내고 연결 끊어야 할 경우 체크 -> 현재는 unregisterMember에서만 가능성 있음
+        if (unregisterMemberMap.find(curr_event->ident) != unregisterMemberMap.end())
+        {
+            if (unregisterMemberMap[curr_event->ident].pendingCloseSocket)
+                clearMember(curr_event->ident);
+            return;
+        }
         EV_SET(&tempEvent, clientSocket, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
         change_list.push_back(tempEvent);
     }
