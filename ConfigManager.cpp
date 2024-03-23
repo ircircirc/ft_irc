@@ -19,7 +19,8 @@ void ConfigManager::routine()
         struct kevent *curr_event = &event_list[i];
         if (curr_event->flags & EV_ERROR)
         {
-            std::cout << curr_event->ident << std::endl;
+            int error_code = curr_event->data;
+            std::cout << strerror(error_code) << std::endl;
             handleError("EV_ERROR");
         }
         if (curr_event->filter == EVFILT_READ)
@@ -159,11 +160,6 @@ void ConfigManager::handleReadEvent(struct kevent *curr_event)
         }
         if (curr_event->flags & EV_EOF)
             clearMember(clientSocket);
-        else
-        {
-            EV_SET(&tempEvent, clientSocket, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-            change_list.push_back(tempEvent);
-        }
     }
 }
 
