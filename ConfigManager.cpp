@@ -68,6 +68,8 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
         registerNick(spiltMessage, clientFd);
     else if (command.compare("USER") == 0 || command.compare("user") == 0)
         registerUser(spiltMessage, clientFd);
+    else if (command.compare("PING") == 0)
+        PingPongInteraction(spiltMessage, clientFd);
     else if (command.compare("PRIVMSG") == 0 || command.compare("privmsg") == 0)
         sendPrivateMsg(spiltMessage, clientFd);
     else if (command.compare("QUIT") == 0 || command.compare("quit") == 0)

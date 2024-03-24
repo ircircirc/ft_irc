@@ -43,6 +43,7 @@ private:
     void handleWriteEvent(struct kevent *curr_event);
     void setReadEvent(int fd);
     void setWriteEvent(int fd);
+    void PingPongInteraction(const std::vector<std::string>& splitMessage, int clientFd);
 
     int port;
     int listenFd;
