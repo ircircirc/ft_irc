@@ -5,8 +5,7 @@ void ConfigManager::registerNick(std::vector<std::string> &commandAndParams, int
     if (commandAndParams.size() < 2)
     {
         serverToClientMsg[clientFd] += ":irc.local 461 * NICK :Not enough parameters.\r\n";
-        EV_SET(&tempEvent, clientFd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-        change_list.push_back(tempEvent);
+        setWriteEvent(clientFd);
         return;
     }
 
@@ -14,8 +13,7 @@ void ConfigManager::registerNick(std::vector<std::string> &commandAndParams, int
     if (fdNicknameMap.find(clientFd) != fdNicknameMap.end())
     {
         serverToClientMsg[clientFd] += std::string(":irc.local 462" + fdNicknameMap[clientFd] + ":You may not reregister\r\n");
-        EV_SET(&tempEvent, clientFd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-        change_list.push_back(tempEvent);
+        setWriteEvent(clientFd);
         return;
     }
 
@@ -24,8 +22,7 @@ void ConfigManager::registerNick(std::vector<std::string> &commandAndParams, int
     if (memberMap.find(nickname) != memberMap.end())
     {
         serverToClientMsg[clientFd] += ":irc.local 433 * root :Nickname is already in use\r\n";
-        EV_SET(&tempEvent, clientFd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-        change_list.push_back(tempEvent);
+        setWriteEvent(clientFd);
         return;
     }
     unregisterMemberMap[clientFd].nickname = nickname;

@@ -1,5 +1,5 @@
 #ifndef CONFIG_MANAGER_HPP
-# define CONFIG_MANAGER_HPP
+#define CONFIG_MANAGER_HPP
 
 #include "UnregisterMember.hpp"
 #include "IrcMember.hpp"
@@ -29,6 +29,7 @@ private:
     void authenticateUser(std::vector<std::string> &commandAndParams, int clientFd);
     void registerNick(std::vector<std::string> &commandAndParams, int clientFd);
     void registerUser(std::vector<std::string> &commandAndParams, int clientFd);
+    void sendPrivateMsg(std::vector<std::string> &commandAndParams, int clientFd);
     void checkRegister(int clientFd);
     void welcomeMember(int clientFd);
     void clearMember(int clientFd);
@@ -39,6 +40,8 @@ private:
     void startKqueue();
     void handleReadEvent(struct kevent *curr_event);
     void handleWriteEvent(struct kevent *curr_event);
+    void setReadEvent(int fd);
+    void setWriteEvent(int fd);
 
     int port;
     int listenFd;
