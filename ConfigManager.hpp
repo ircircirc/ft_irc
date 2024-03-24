@@ -39,6 +39,7 @@ private:
     void startKqueue();
     void handleReadEvent(struct kevent *curr_event);
     void handleWriteEvent(struct kevent *curr_event);
+    void PingPongInteraction(const std::vector<std::string>& splitMessage, int clientFd);
 
     int port;
     int listenFd;

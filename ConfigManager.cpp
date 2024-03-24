@@ -104,6 +104,8 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
         registerNick(spiltMessage, clientFd);
     else if (command.compare("USER") == 0 || command.compare("user") == 0)
         registerUser(spiltMessage, clientFd);
+    else if (command.compare("PING") == 0)
+        PingPongInteraction(spiltMessage, clientFd);
 }
 
 void ConfigManager::processMessageBuffer(std::string &clientMsg, int clientFd)
