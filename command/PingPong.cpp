@@ -5,16 +5,14 @@ void ConfigManager::PingPongInteraction(const std::vector<std::string>& splitMes
 	if (fdNicknameMap.find(clientFd) == fdNicknameMap.end())
 	{
 		serverToClientMsg[clientFd] += std::string(":irc.local 451 * PING :You have not registered.\r\n");
-		EV_SET(&tempEvent, clientFd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-		change_list.push_back(tempEvent);
+		setWriteEvent(clientFd);
 		return;
 	}
 
     if (splitMessage.size() < 2)
     {
         serverToClientMsg[clientFd] += ":irc.local 461 * PING :Not enough parameters.\r\n";
-        EV_SET(&tempEvent, clientFd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-        change_list.push_back(tempEvent);
+		setWriteEvent(clientFd);
         return;
     }
 
@@ -28,6 +26,5 @@ void ConfigManager::PingPongInteraction(const std::vector<std::string>& splitMes
 	serverToClientMsg[clientFd] += response;
 
     struct kevent tempEvent;
-    EV_SET(&tempEvent, clientFd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-    change_list.push_back(tempEvent);
+	setWriteEvent(clientFd);
 }
