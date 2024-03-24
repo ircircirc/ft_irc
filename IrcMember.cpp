@@ -10,4 +10,5 @@ IrcMember::IrcMember(UnregisterMember &unregisterMember, int fd)
     servername = unregisterMember.servername;
     realname = unregisterMember.realname;
     this->fd = fd;
+    this->pendingCloseSocket = false;
 }

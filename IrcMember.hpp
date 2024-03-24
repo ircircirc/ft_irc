@@ -16,6 +16,7 @@ public:
     std::string servername;
     std::string realname;
     int fd;
+    bool pendingCloseSocket;
 };
 
 #endif

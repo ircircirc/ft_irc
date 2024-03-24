@@ -70,6 +70,8 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
         registerUser(spiltMessage, clientFd);
     else if (command.compare("PRIVMSG") == 0 || command.compare("privmsg") == 0)
         sendPrivateMsg(spiltMessage, clientFd);
+    else if (command.compare("QUIT") == 0 || command.compare("quit") == 0)
+        quitMember(clientFd);
 }
 
 void ConfigManager::processMessageBuffer(std::string &clientMsg, int clientFd)
@@ -144,11 +146,17 @@ void ConfigManager::handleWriteEvent(struct kevent *curr_event)
         write(clientSocket, serverToClientMsg[clientSocket].data(), serverToClientMsg[clientSocket].size());
         serverToClientMsg[curr_event->ident].clear();
 
-        // 메시지 보내고 연결 끊어야 할 경우 체크 -> 현재는 unregisterMember에서만 가능성 있음
-        if (unregisterMemberMap.find(curr_event->ident) != unregisterMemberMap.end())
+        // 메시지 보내고 연결 끊어야 할 경우 체크
+        if (unregisterMemberMap.find(clientSocket) != unregisterMemberMap.end())
         {
-            if (unregisterMemberMap[curr_event->ident].pendingCloseSocket)
-                clearMember(curr_event->ident);
+            if (unregisterMemberMap[clientSocket].pendingCloseSocket)
+                clearMember(clientSocket);
+            return;
+        }
+        if (fdNicknameMap.find(clientSocket) != fdNicknameMap.end())
+        {
+            if (memberMap[fdNicknameMap[clientSocket]].pendingCloseSocket)
+                clearMember(clientSocket);
             return;
         }
         EV_SET(&tempEvent, clientSocket, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);

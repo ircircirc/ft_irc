@@ -30,6 +30,7 @@ private:
     void registerNick(std::vector<std::string> &commandAndParams, int clientFd);
     void registerUser(std::vector<std::string> &commandAndParams, int clientFd);
     void sendPrivateMsg(std::vector<std::string> &commandAndParams, int clientFd);
+    void quitMember(int clientFd);
     void checkRegister(int clientFd);
     void welcomeMember(int clientFd);
     void clearMember(int clientFd);
