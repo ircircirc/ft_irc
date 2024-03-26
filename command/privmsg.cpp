@@ -4,7 +4,7 @@ void ConfigManager::sendPrivateMsg(std::vector<std::string> &commandAndParams, i
 {
     if (commandAndParams.size() < 3)
     {
-        serverToClientMsg[clientFd] += ":irc.local 461 * PASS :Not enough parameters.\r\n";
+        serverToClientMsg[clientFd] += ":irc.local 461 * PRIVMSG :Not enough parameters.\r\n";
         setWriteEvent(clientFd);
         return;
     }

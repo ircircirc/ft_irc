@@ -28,11 +28,11 @@ services:
 
 ##################################################
 # irssi 패킷 관찰
-# docker exec -it irc bash
+# docker exec -it irssi_client bash
 # tcpflow -i lo port 6667 -c
 
 # irssi 클라이언트 -> 상용서버 연결
-# docker exec -it irc bash
+# docker exec -it irssi_client bash 
 # irssi
 # /connect -nocap 127.0.0.1 6667 your_password
 

@@ -3,6 +3,7 @@
 
 #include "UnregisterMember.hpp"
 #include "IrcMember.hpp"
+#include "Channel.hpp"
 #include "util/util.hpp"
 #include <vector>
 #include <map>
@@ -31,6 +32,10 @@ private:
     void registerUser(std::vector<std::string> &commandAndParams, int clientFd);
     void sendPrivateMsg(std::vector<std::string> &commandAndParams, int clientFd);
     void quitMember(int clientFd);
+    void PingPongInteraction(const std::vector<std::string> &splitMessage, int clientFd);
+    void joinChannel(std::vector<std::string> &commandAndParams, int clientFd);
+    void join(int clientFd, const std::string &channelName);
+
     void checkRegister(int clientFd);
     void welcomeMember(int clientFd);
     void clearMember(int clientFd);
@@ -43,7 +48,6 @@ private:
     void handleWriteEvent(struct kevent *curr_event);
     void setReadEvent(int fd);
     void setWriteEvent(int fd);
-    void PingPongInteraction(const std::vector<std::string>& splitMessage, int clientFd);
 
     int port;
     int listenFd;
@@ -56,6 +60,7 @@ private:
     std::map<int, UnregisterMember> unregisterMemberMap;
     std::map<std::string, IrcMember> memberMap;
     std::map<int, std::string> fdNicknameMap;
+    std::map<std::string, Channel> channelMap;
 };
 
 #endif

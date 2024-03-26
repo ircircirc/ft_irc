@@ -2,8 +2,9 @@
 # define IRC_MEMBER_HPP
 
 
-#include <string>
 #include "UnregisterMember.hpp"
+#include <string>
+#include <set>
 
 class IrcMember
 {
@@ -17,6 +18,7 @@ public:
     std::string realname;
     int fd;
     bool pendingCloseSocket;
+    std::set<std::string> memberChannelSet;
 };
 
 #endif

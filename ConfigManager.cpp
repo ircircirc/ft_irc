@@ -40,6 +40,12 @@ void ConfigManager::clearMember(int clientFd)
     if (fdNicknameMap.find(clientFd) != fdNicknameMap.end())
     {
         std::string nickname = fdNicknameMap[clientFd];
+        // 참여하고 있는 채널에서 나가기
+        std::set<std::string> &channeNameSet = memberMap[nickname].memberChannelSet;
+        std::set<std::string>::iterator it;
+        for (it = channeNameSet.begin(); it != channeNameSet.end(); it++)
+            channelMap[*it].memberNickSet.erase(nickname);
+        //멤버 삭제
         memberMap.erase(nickname);
         fdNicknameMap.erase(clientFd);
     }
@@ -74,6 +80,8 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
         sendPrivateMsg(spiltMessage, clientFd);
     else if (command.compare("QUIT") == 0 || command.compare("quit") == 0)
         quitMember(clientFd);
+    else if (command.compare("JOIN") == 0 || command.compare("join") == 0)
+        joinChannel(spiltMessage, clientFd);
 }
 
 void ConfigManager::processMessageBuffer(std::string &clientMsg, int clientFd)
