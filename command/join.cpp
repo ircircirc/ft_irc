@@ -24,13 +24,16 @@
 // :irc.local 366 kk #42seoul :End of /NAMES list
 // :kk! root@root JOIN :#42seoul
 
-static std::string getChannelMemberList(std::set<std::string> &memberNickSet, std::map<std::string, IrcMember> &memberMap)
+static std::string getChannelMemberList(std::set<std::string> &operatorNickSet, std::set<std::string> &memberNickSet, std::map<std::string, IrcMember> &memberMap)
 {
     std::string channelMemberList = "";
     std::set<std::string>::iterator it = memberNickSet.begin();
     for (; it != memberNickSet.end(); ++it)
     {
-        channelMemberList += (memberMap[*it].nickname + " ");
+        if (operatorNickSet.find(*it) != operatorNickSet.end())
+            channelMemberList += ("@" + *it + " ");
+        else
+            channelMemberList += (*it + " ");
     }
     return channelMemberList;
 }
@@ -38,10 +41,13 @@ static std::string getChannelMemberList(std::set<std::string> &memberNickSet, st
 void ConfigManager::join(int clientFd, const std::string &channelName)
 {
     std::string clientNick = fdNicknameMap[clientFd];
-    //채널이 만들어 져야할 경우
+    // 채널이 만들어 져야할 경우
     if (channelMap.find(channelName) == channelMap.end())
+    {
         channelMap[channelName] = Channel(channelName);
-    //이미 가입한 채널에 join할 경우
+        channelMap[channelName].operatorNickSet.insert(clientNick);
+    }
+    // 이미 가입한 채널에 join할 경우
     if (channelMap[channelName].memberNickSet.find(clientNick) != channelMap[channelName].memberNickSet.end())
         return;
 
@@ -59,7 +65,7 @@ void ConfigManager::join(int clientFd, const std::string &channelName)
         setWriteEvent(channelMemberFd);
     }
 
-    std::string firstMsg = ":irc.local 353 " + clientNick + " = #" + channelName + " :" + getChannelMemberList(channelMap[channelName].memberNickSet, memberMap) + "\r\n";
+    std::string firstMsg = ":irc.local 353 " + clientNick + " = #" + channelName + " :" + getChannelMemberList(channelMap[channelName].operatorNickSet, channelMap[channelName].memberNickSet, memberMap) + "\r\n";
     firstMsg += ":irc.local 366 " + clientNick + " #" + channelName + " :End of /NAMES list.\r\n";
     serverToClientMsg[clientFd] += firstMsg;
 }

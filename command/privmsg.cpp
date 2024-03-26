@@ -12,7 +12,7 @@
 // privmsg #hi : hello
 // :irc.local 403 kkk #hi :No such channel
 
-std::string makeMsg(std::string &nickname, std::string &username, std::string targetName, std::vector<std::string> &commandAndParams)
+static std::string makeMsg(std::string &nickname, std::string &username, std::string targetName, std::vector<std::string> &commandAndParams)
 {
     std::string msg;
     msg += std::string(":" + nickname + "!" + username + "@" + "127.0.0.1" + " ");
@@ -50,7 +50,7 @@ void ConfigManager::sendChannel(std::vector<std::string> &commandAndParams, int 
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)
     {
         int channelMemberFd = memberMap[*it].fd;
-        //자기자신에게 메시지를 안보냄
+        // 자기자신에게 메시지를 안보냄
         if ((*it).compare(nickname) == 0)
             continue;
         serverToClientMsg[channelMemberFd] += msg;

@@ -44,7 +44,10 @@ void ConfigManager::clearMember(int clientFd)
         std::set<std::string> &channeNameSet = memberMap[nickname].memberChannelSet;
         std::set<std::string>::iterator it;
         for (it = channeNameSet.begin(); it != channeNameSet.end(); it++)
+        {
             channelMap[*it].memberNickSet.erase(nickname);
+            channelMap[*it].operatorNickSet.erase(nickname);
+        }
         //멤버 삭제
         memberMap.erase(nickname);
         fdNicknameMap.erase(clientFd);
@@ -84,7 +87,8 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
         joinChannel(spiltMessage, clientFd);
     else if (command.compare("PART") == 0 || command.compare("part") == 0)
         partChannel(spiltMessage, clientFd);
-
+    else if (command.compare("KICK") == 0 || command.compare("kick") == 0)
+        kickMember(spiltMessage, clientFd);
 }
 
 void ConfigManager::processMessageBuffer(std::string &clientMsg, int clientFd)

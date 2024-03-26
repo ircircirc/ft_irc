@@ -11,6 +11,7 @@ public:
     Channel(std::string name);
     std::string name;
     std::set<std::string> memberNickSet;
+    std::set<std::string> operatorNickSet;
 };
 
 #endif
