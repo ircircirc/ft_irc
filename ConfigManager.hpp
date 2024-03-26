@@ -31,6 +31,8 @@ private:
     void registerNick(std::vector<std::string> &commandAndParams, int clientFd);
     void registerUser(std::vector<std::string> &commandAndParams, int clientFd);
     void sendPrivateMsg(std::vector<std::string> &commandAndParams, int clientFd);
+    void sendDM(std::vector<std::string> &commandAndParams, int clientFd);
+    void sendChannel(std::vector<std::string> &commandAndParams, int clientFd);
     void quitMember(int clientFd);
     void PingPongInteraction(const std::vector<std::string> &splitMessage, int clientFd);
     void joinChannel(std::vector<std::string> &commandAndParams, int clientFd);
