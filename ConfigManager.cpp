@@ -82,6 +82,9 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
         quitMember(clientFd);
     else if (command.compare("JOIN") == 0 || command.compare("join") == 0)
         joinChannel(spiltMessage, clientFd);
+    else if (command.compare("PART") == 0 || command.compare("part") == 0)
+        partChannel(spiltMessage, clientFd);
+
 }
 
 void ConfigManager::processMessageBuffer(std::string &clientMsg, int clientFd)

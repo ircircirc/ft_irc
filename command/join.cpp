@@ -49,7 +49,8 @@ void ConfigManager::join(int clientFd, const std::string &channelName)
     channelMap[channelName].memberNickSet.insert(clientNick);
 
     //채널에 참여한 인원에게 공통으로 알리는 메시지
-    std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@" + memberMap[clientNick].hostname + " JOIN :#" + channelName + "\r\n";
+    // std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@" + memberMap[clientNick].hostname + " JOIN :#" + channelName + "\r\n";
+    std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@127.0.0.1 JOIN :#" + channelName + "\r\n";   
     std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)
     {
@@ -80,17 +81,17 @@ void ConfigManager::joinChannel(std::vector<std::string> &commandAndParams, int 
     }
 
     std::string &channels = commandAndParams[1];
-    std::vector<std::string> spiltChannels = split(channels, ",");
-    for (int i = 0; i < spiltChannels.size(); i++)
+    std::vector<std::string> splitChannels = split(channels, ",");
+    for (int i = 0; i < splitChannels.size(); i++)
     {
-        if (spiltChannels[i].size() == 0)
+        if (splitChannels[i].size() == 0)
             continue;
-        if (spiltChannels[i][0] != '#')
+        if (splitChannels[i][0] != '#')
         {
-            serverToClientMsg[clientFd] += ":irc.local 476 " + memberMap[fdNicknameMap[clientFd]].nickname + " " + spiltChannels[i] + ":Invalid channel name\r\n";
+            serverToClientMsg[clientFd] += ":irc.local 476 " + memberMap[fdNicknameMap[clientFd]].nickname + " " + splitChannels[i] + ":Invalid channel name\r\n";
             setWriteEvent(clientFd);
             continue;
         }
-        join(clientFd, spiltChannels[i].substr(1));
+        join(clientFd, splitChannels[i].substr(1));
     }
 }

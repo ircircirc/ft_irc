@@ -25,7 +25,8 @@ void ConfigManager::welcomeMember(int clientFd)
     unregisterMemberMap.erase(clientFd);
     // hostname을 서버가 클라이언트에게 받았으나, 실제로 사용할때는 클라이언트의 IP주소를 조회해 사용한다고함.
     // 추후 수정 고려
-    std::string ret1 = ":irc.local 001 " + member.nickname + " :Welcome to the Internet Relay Network" + member.nickname + "!" + member.username + "@" + member.hostname + "\r\n";
+    std::string ret1 = ":irc.local 001 " + member.nickname + " :Welcome to the Internet Relay Network " + member.nickname + "!" + member.username + "@127.0.0.1\r\n";
+    // std::string ret1 = ":irc.local 001 " + member.nickname + " :Welcome to the Internet Relay Network " + member.nickname + "!" + member.username + "@" + member.hostname + "\r\n";
     // std::string ret2 = ":irc.local 002 root :Your host is ft_irc, running version 0.0.1\r\n";
     // std::string ret3 = ":irc.local 003 root :This server was created a long ago\r\n";
     // std::string ret4 = ":irc.local 004 root ft_irc\r\n";
