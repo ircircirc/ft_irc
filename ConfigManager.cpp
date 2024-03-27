@@ -48,6 +48,10 @@ void ConfigManager::clearMember(int clientFd)
             channelMap[*it].memberNickSet.erase(nickname);
             channelMap[*it].operatorNickSet.erase(nickname);
         }
+        //초대받은 채널에서 삭제
+        std::set<std::string> &invitedChannelSet = memberMap[nickname].invitedChannelSet;
+        for(it = invitedChannelSet.begin(); it != invitedChannelSet.end(); it++)
+            channelMap[*it].invitedMemberSet.erase(nickname);
         //멤버 삭제
         memberMap.erase(nickname);
         fdNicknameMap.erase(clientFd);
@@ -91,6 +95,8 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
         kickMember(spiltMessage, clientFd);
     else if (command.compare("MODE") == 0 || command.compare("mode") == 0)
         processMode(spiltMessage, clientFd);
+    else if (command.compare("INVITE") == 0 || command.compare("invite") == 0)
+        inviteMember(spiltMessage, clientFd);
 }
 
 void ConfigManager::processMessageBuffer(std::string &clientMsg, int clientFd)

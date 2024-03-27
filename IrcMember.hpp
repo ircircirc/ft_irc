@@ -19,6 +19,7 @@ public:
     int fd;
     bool pendingCloseSocket;
     std::set<std::string> memberChannelSet;
+    std::set<std::string> invitedChannelSet;
 };
 
 #endif

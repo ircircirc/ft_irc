@@ -36,12 +36,14 @@ private:
     void quitMember(int clientFd);
     void PingPongInteraction(const std::vector<std::string> &splitMessage, int clientFd);
     void joinChannel(std::vector<std::string> &commandAndParams, int clientFd);
-    void join(int clientFd, const std::string &channelName);
+    void join(int clientFd, const std::string &channelName, std::vector<std::string> &commandAndParams);
     void kickMember(std::vector<std::string> &commandAndParams, int clientFd);
     void processMode(std::vector<std::string> &commandAndParams, int clientFd);
-
+    void processModeInvite(int clientFd, bool sign, std::string &channelName);
+    void processModeKey(int clientFd, bool sign, std::string &channelName, std::vector<std::string> &commandAndParams);
     void partChannel(std::vector<std::string> &commandAdnParams, int clientFd);
     void part(int clientFd, const std::string &channelName);
+    void inviteMember(std::vector<std::string> &commandAndParams, int clientFd);
 
     void checkRegister(int clientFd);
     void welcomeMember(int clientFd);

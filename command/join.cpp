@@ -38,7 +38,7 @@ static std::string getChannelMemberList(std::set<std::string> &operatorNickSet, 
     return channelMemberList;
 }
 
-void ConfigManager::join(int clientFd, const std::string &channelName)
+void ConfigManager::join(int clientFd, const std::string &channelName, std::vector<std::string> &commandAndParams)
 {
     std::string clientNick = fdNicknameMap[clientFd];
     // 채널이 만들어 져야할 경우
@@ -50,13 +50,34 @@ void ConfigManager::join(int clientFd, const std::string &channelName)
     // 이미 가입한 채널에 join할 경우
     if (channelMap[channelName].memberNickSet.find(clientNick) != channelMap[channelName].memberNickSet.end())
         return;
+    // 초대전용인 경우 초대받았는지 여부 확인
+    if (channelMap[channelName].inviteOnly)
+    {
+        if (channelMap[channelName].invitedMemberSet.find(clientNick) == channelMap[channelName].invitedMemberSet.end())
+        {
+            serverToClientMsg[clientFd] += ":irc.local 473 " + clientNick + " #" + channelName + " :Cannot join channel (invite only)\r\n";
+            setWriteEvent(clientFd);
+            return;
+        }
+        channelMap[channelName].invitedMemberSet.erase(clientNick);
+    }
+    // 초대전용 아니면서 키 모드면 키 확인
+    if(!channelMap[channelName].inviteOnly && channelMap[channelName].useKeyOnly)
+    {
+        if(commandAndParams.size() < 3 || commandAndParams[2].compare(channelMap[channelName].key) != 0)
+        {
+            serverToClientMsg[clientFd] += ":irc.local 475 " + clientNick + " #" + channelName + " :Cannot join channel (incorrect channel key)\r\n";
+            setWriteEvent(clientFd);
+            return ;
+        }
+    }
 
     memberMap[clientNick].memberChannelSet.insert(channelName);
     channelMap[channelName].memberNickSet.insert(clientNick);
 
-    //채널에 참여한 인원에게 공통으로 알리는 메시지
-    // std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@" + memberMap[clientNick].hostname + " JOIN :#" + channelName + "\r\n";
-    std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@127.0.0.1 JOIN :#" + channelName + "\r\n";   
+    // 채널에 참여한 인원에게 공통으로 알리는 메시지
+    //  std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@" + memberMap[clientNick].hostname + " JOIN :#" + channelName + "\r\n";
+    std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@127.0.0.1 JOIN :#" + channelName + "\r\n";
     std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)
     {
@@ -98,6 +119,6 @@ void ConfigManager::joinChannel(std::vector<std::string> &commandAndParams, int 
             setWriteEvent(clientFd);
             continue;
         }
-        join(clientFd, splitChannels[i].substr(1));
+        join(clientFd, splitChannels[i].substr(1), commandAndParams);
     }
 }

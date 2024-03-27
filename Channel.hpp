@@ -12,7 +12,10 @@ public:
     std::string name;
     std::set<std::string> memberNickSet;
     std::set<std::string> operatorNickSet;
+    std::set<std::string> invitedMemberSet;
     bool inviteOnly;
+    bool useKeyOnly;
+    std::string key;
 };
 
 #endif

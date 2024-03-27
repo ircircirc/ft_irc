@@ -8,31 +8,30 @@ void ConfigManager::processMode(std::vector<std::string> &commandAndParams, int 
         setWriteEvent(clientFd);
         return;
     }
+
     if (fdNicknameMap.find(clientFd) == fdNicknameMap.end())
     {
         serverToClientMsg[clientFd] += ":irc.local 451 * MODE :You have not registered.\r\n";
         setWriteEvent(clientFd);
         return;
     }
-    std::string channelName = commandAndParams[1];
 
-    // 처음에 연결되면 mode로 물어봄 -> 닉네임에 대한 모드? 인듯?? -> 일단 미처리
-    if (channelName.size() == 0 || channelName[0] != '#')
-    {
+    // 실제로는 채널 참여할때 mode정보 조회함 -> 일단 필요없기 때문에 구현 안함
+    if (commandAndParams.size() == 2)
         return;
-    }
 
-    channelName = channelName.substr(1);
+    // #안붙으면 닉네임에 대한 모드 -> 일단 미처리
+    if (commandAndParams[1].size() == 0 || commandAndParams[1][0] != '#')
+        return;
+
+    std::string channelName = commandAndParams[1].substr(1);
+
     if (channelName.size() != 0 && channelMap.find(channelName) == channelMap.end())
     {
         serverToClientMsg[clientFd] += ":irc.local 403 " + fdNicknameMap[clientFd] + " " + channelName + " :No such channel\r\n";
         setWriteEvent(clientFd);
         return;
     }
-
-    // mode #channel -> 이렇게 온 경우 채널정보 반환하는듯? -> 나중에 처리할 생각
-    if (commandAndParams.size() == 2)
-        return;
 
     std::string nick = fdNicknameMap[clientFd];
     Channel &channel = channelMap[channelName];
@@ -48,36 +47,17 @@ void ConfigManager::processMode(std::vector<std::string> &commandAndParams, int 
     std::string modes = commandAndParams[2];
     if (modes.size() == 0)
         return;
-    bool sign;
-    char signChar;
+    bool sign = true;
     if (modes[0] == '-')
-    {
         sign = false;
-        signChar = '-';
-    }
-    else
-    {
-        sign = true;
-        signChar = '+';
-    }
     if (modes[0] == '+' || modes[0] == '-')
         modes = modes.substr(1);
     for (int i = 0; i < modes.size(); i++)
     {
         if (modes[i] == 'i')
-        {
-            if (channelMap[channelName].inviteOnly == sign)
-                continue;
-            channelMap[channelName].inviteOnly = sign;
-            std::string msg = ":" + fdNicknameMap[clientFd] + "!" + memberMap[fdNicknameMap[clientFd]].username + "@127.0.0.1 MODE #" + channelName + " :" + signChar + "i\r\n";
-            std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
-            for (; it != channelMap[channelName].memberNickSet.end(); ++it)
-            {
-                int channelMemberFd = memberMap[*it].fd;
-                serverToClientMsg[channelMemberFd] += msg;
-                setWriteEvent(channelMemberFd);
-            }
-        }
+            processModeInvite(clientFd, sign, channelName);
+        if(modes[i] == 'k')
+            processModeKey(clientFd, sign, channelName, commandAndParams);
         else
         {
             serverToClientMsg[clientFd] += ":irc.local 472 " + fdNicknameMap[clientFd] + " " + modes[i] + " :is not a recognised channel mode.\r\n";
@@ -112,4 +92,15 @@ void ConfigManager::processMode(std::vector<std::string> &commandAndParams, int 
 // 모드 변경한 메시지가 채널의 모두에게 알려짐
 // MODE #hi +i
 // :c!root@127.0.0.1 MODE #hi :+i
+// :c!root@127.0.0.1 MODE #hi :+i
+
+// 없는 채널 케이스1
+// MODE hi +i
+// :irc.local 401 c hi :No such nick
+
+// 없는 채널 케이스2
+// MODE #hi2 +i
+// :irc.local 403 c #hi2 :No such channel
+
+// MODE #hi +i
 // :c!root@127.0.0.1 MODE #hi :+i
