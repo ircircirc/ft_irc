@@ -89,6 +89,8 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
         partChannel(spiltMessage, clientFd);
     else if (command.compare("KICK") == 0 || command.compare("kick") == 0)
         kickMember(spiltMessage, clientFd);
+    else if (command.compare("MODE") == 0 || command.compare("mode") == 0)
+        processMode(spiltMessage, clientFd);
 }
 
 void ConfigManager::processMessageBuffer(std::string &clientMsg, int clientFd)

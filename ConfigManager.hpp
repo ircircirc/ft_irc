@@ -38,6 +38,7 @@ private:
     void joinChannel(std::vector<std::string> &commandAndParams, int clientFd);
     void join(int clientFd, const std::string &channelName);
     void kickMember(std::vector<std::string> &commandAndParams, int clientFd);
+    void processMode(std::vector<std::string> &commandAndParams, int clientFd);
 
     void partChannel(std::vector<std::string> &commandAdnParams, int clientFd);
     void part(int clientFd, const std::string &channelName);

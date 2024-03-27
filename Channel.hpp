@@ -12,6 +12,7 @@ public:
     std::string name;
     std::set<std::string> memberNickSet;
     std::set<std::string> operatorNickSet;
+    bool inviteOnly;
 };
 
 #endif
