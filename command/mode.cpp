@@ -56,8 +56,10 @@ void ConfigManager::processMode(std::vector<std::string> &commandAndParams, int 
     {
         if (modes[i] == 'i')
             processModeInvite(clientFd, sign, channelName);
-        if(modes[i] == 'k')
+        else if(modes[i] == 'k')
             processModeKey(clientFd, sign, channelName, commandAndParams);
+        else if(modes[i] == 'o')
+            processModeOperator(clientFd, sign, channelName, commandAndParams);
         else
         {
             serverToClientMsg[clientFd] += ":irc.local 472 " + fdNicknameMap[clientFd] + " " + modes[i] + " :is not a recognised channel mode.\r\n";
