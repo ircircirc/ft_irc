@@ -19,6 +19,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cctype>
+#include <sstream>
 
 class ConfigManager
 {
@@ -42,6 +43,7 @@ private:
     void processModeInvite(int clientFd, bool sign, std::string &channelName);
     void processModeKey(int clientFd, bool sign, std::string &channelName, std::vector<std::string> &commandAndParams);
     void processModeOperator(int clientFd, bool sign, std::string &channelName, std::vector<std::string> &commandAndParams);
+    void processModeLimit(int clientFd, bool sign, std::string &channelName, std::vector<std::string> &commandAndParams);
     void partChannel(std::vector<std::string> &commandAdnParams, int clientFd);
     void part(int clientFd, const std::string &channelName);
     void inviteMember(std::vector<std::string> &commandAndParams, int clientFd);

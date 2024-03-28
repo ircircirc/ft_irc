@@ -15,6 +15,8 @@ public:
     std::set<std::string> invitedMemberSet;
     bool inviteOnly;
     bool useKeyOnly;
+    bool isLimit;
+    int limitCount;
     std::string key;
 };
 

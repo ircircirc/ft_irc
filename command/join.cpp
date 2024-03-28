@@ -50,25 +50,41 @@ void ConfigManager::join(int clientFd, const std::string &channelName, std::vect
     // 이미 가입한 채널에 join할 경우
     if (channelMap[channelName].memberNickSet.find(clientNick) != channelMap[channelName].memberNickSet.end())
         return;
-    // 초대전용인 경우 초대받았는지 여부 확인
-    if (channelMap[channelName].inviteOnly)
+
+    // 초대 받았으면 바로 입장
+    if (channelMap[channelName].invitedMemberSet.find(clientNick) != channelMap[channelName].invitedMemberSet.end())
     {
-        if (channelMap[channelName].invitedMemberSet.find(clientNick) == channelMap[channelName].invitedMemberSet.end())
+        channelMap[channelName].invitedMemberSet.erase(clientNick);
+        memberMap[clientNick].invitedChannelSet.erase(channelName);
+    }
+    else
+    {
+        // 초대전용인 경우 퇴장
+        if (channelMap[channelName].inviteOnly)
         {
             serverToClientMsg[clientFd] += ":irc.local 473 " + clientNick + " #" + channelName + " :Cannot join channel (invite only)\r\n";
             setWriteEvent(clientFd);
             return;
         }
-        channelMap[channelName].invitedMemberSet.erase(clientNick);
-    }
-    // 초대전용 아니면서 키 모드면 키 확인
-    if(!channelMap[channelName].inviteOnly && channelMap[channelName].useKeyOnly)
-    {
-        if(commandAndParams.size() < 3 || commandAndParams[2].compare(channelMap[channelName].key) != 0)
+        // 키 모드면 키 확인
+        if (channelMap[channelName].useKeyOnly)
         {
-            serverToClientMsg[clientFd] += ":irc.local 475 " + clientNick + " #" + channelName + " :Cannot join channel (incorrect channel key)\r\n";
-            setWriteEvent(clientFd);
-            return ;
+            if (commandAndParams.size() < 3 || commandAndParams[2].compare(channelMap[channelName].key) != 0)
+            {
+                serverToClientMsg[clientFd] += ":irc.local 475 " + clientNick + " #" + channelName + " :Cannot join channel (incorrect channel key)\r\n";
+                setWriteEvent(clientFd);
+                return;
+            }
+        }
+        // 초대전용 아니면서 제한 모드면 제한인원 확인
+        if (channelMap[channelName].isLimit)
+        {
+            if (channelMap[channelName].memberNickSet.size() >= channelMap[channelName].limitCount)
+            {
+                serverToClientMsg[clientFd] += ":irc.local 471 " + clientNick + " #" + channelName + " :Cannot join channel (channel is full)\r\n";
+                setWriteEvent(clientFd);
+                return;
+            }
         }
     }
 
