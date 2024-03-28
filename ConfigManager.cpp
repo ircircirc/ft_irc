@@ -91,6 +91,8 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
         kickMember(spiltMessage, clientFd);
     else if (command.compare("MODE") == 0 || command.compare("mode") == 0)
         processMode(spiltMessage, clientFd);
+    else if (command.compare("TOPIC") == 0 || command.compare("topic") == 0)
+        processTopic(spiltMessage, clientFd);
 }
 
 void ConfigManager::processMessageBuffer(std::string &clientMsg, int clientFd)

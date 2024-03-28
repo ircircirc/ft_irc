@@ -40,8 +40,12 @@ private:
     void kickMember(std::vector<std::string> &commandAndParams, int clientFd);
     void processMode(std::vector<std::string> &commandAndParams, int clientFd);
 
-    void partChannel(std::vector<std::string> &commandAdnParams, int clientFd);
+    void partChannel(std::vector<std::string> &commandAndParams, int clientFd);
     void part(int clientFd, const std::string &channelName);
+
+    void processTopic(std::vector<std::string> &commandAndParams, int clientFd);
+    void topic(int clientFd, const std::vector<std::string> &commandAndParams, const std::string &channelName);
+
 
     void checkRegister(int clientFd);
     void welcomeMember(int clientFd);
