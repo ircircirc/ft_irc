@@ -97,6 +97,8 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
         processMode(spiltMessage, clientFd);
     else if (command.compare("INVITE") == 0 || command.compare("invite") == 0)
         inviteMember(spiltMessage, clientFd);
+    else if (command.compare("TOPIC") == 0 || command.compare("topic") == 0)
+        processTopic(spiltMessage, clientFd);
 }
 
 void ConfigManager::processMessageBuffer(std::string &clientMsg, int clientFd)

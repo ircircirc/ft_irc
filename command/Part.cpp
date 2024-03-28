@@ -51,8 +51,6 @@ void ConfigManager::part(int clientFd, const std::string &channelName)
 		setWriteEvent(clientFd);
         return;
 	}
-	channelMap[channelName].memberNickSet.erase(clientNick);
-	memberMap[clientNick].memberChannelSet.erase(channelName);
 
 	// 채널에 참여한 인원에게 공통으로 알리는 메시지 (실제 메시지 내용 확인 대조)
 	// 127.000.000.001.06667-127.000.000.001.63684: :dragon!root@127.0.0.1 PART :#coffee
@@ -68,10 +66,12 @@ void ConfigManager::part(int clientFd, const std::string &channelName)
 		setWriteEvent(channelMemberFd);
 	}
 	
-	if (channelMap[channelName].memberNickSet.empty())	// 마지막 인원이 나갈 때
-    {
-        channelMap.erase(channelName);
-	}
+	channelMap[channelName].memberNickSet.erase(clientNick);
+	memberMap[clientNick].memberChannelSet.erase(channelName);
+	// if (channelMap[channelName].memberNickSet.empty())	// 마지막 인원이 나갈 때
+    // {
+    //     channelMap.erase(channelName);
+	// }
 
 	
 }
