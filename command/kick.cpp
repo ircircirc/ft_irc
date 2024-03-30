@@ -1,16 +1,5 @@
 #include "../ConfigManager.hpp"
 
-// KICK #aa kk__ :msg
-
-// :kk!root@127.0.0.1 KICK #aa kk__ :msg
-// :kk!root@127.0.0.1 KICK #aa kk__ :msg
-// :kk!root@127.0.0.1 KICK #aa kk__ :msg
-
-//: irc.local 403 kkk hello :No such channel
-// 타겟 닉네임 못찾음
-//: irc.local 401 kkk target_nick :No such nick
-//: irc.local 482 kk__ #aa :You must be a channel op or higher to kick a more privileged user.
-
 static std::string makeMsg(std::vector<std::string> &commandAndParams)
 {
     std::string msg;

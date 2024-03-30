@@ -23,19 +23,15 @@ void ConfigManager::setConifg(int argc, char **argv)
         handleError("invalid input");
     port = std::atoi(argv[1]);
     password = std::string(argv[2]);
-    std::cout << "포트 : " << port << " 비밀번호 : " << password << std::endl;
 }
 void ConfigManager::listenSocket()
 {
     listenFd = socket(PF_INET, SOCK_STREAM, 0);
     if (listenFd == -1)
         handleError("socket Error");
-
-    //////////// reuseaddr 처리 -> 나중에는 지우는게 나을듯?///////////////
     int reuse = 1;
     if (setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) < 0)
         handleError("setsockopt(SO_REUSEADDR) failed");
-    ////////////////////////////////////////////////////////////
     makeNonBlock(listenFd);
     struct sockaddr_in addr = {};
     addr.sin_family = AF_INET;

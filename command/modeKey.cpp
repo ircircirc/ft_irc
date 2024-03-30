@@ -1,25 +1,5 @@
 #include "../ConfigManager.hpp"
 
-// 키 실패
-// :irc.local 475 b #hi :Cannot join channel (incorrect channel key)
-
-// JOIN #bb pass
-// 성공
-
-// 초대전용이면 키 모드와 관계없이 join할 수 있음
-
-// 키 보내지 않을경우
-// MODE #aa +k
-// :irc.local 696 a #aa k * :You must specify a parameter for the key mode. Syntax: <key>.
-
-// 키 변경하면 모두에게 메시지 보낸다.
-// MODE #aa +k password
-// :a!root@127.0.0.1 MODE #aa +k :password
-// :a!root@127.0.0.1 MODE #aa +k :password
-
-// 키 없앨때도 키 필요함
-// MODE #aa -k passwor
-// :irc.local 467 a #aa :Channel key already set
 
 void ConfigManager::processModeKey(int clientFd, bool sign, std::string &channelName, std::vector<std::string> &commandAndParams)
 {

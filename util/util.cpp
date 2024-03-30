@@ -3,7 +3,7 @@
 void handleError(std::string errMsg)
 {
     std::cerr << "오류 발생: " << strerror(errno) << std::endl;
-    if (!errMsg.empty()) // 빈문자열 "" 처리
+    if (!errMsg.empty())
         std::cerr << errMsg << std::endl;
     std::exit(EXIT_FAILURE);
 }
@@ -29,38 +29,4 @@ void makeNonBlock(int fd)
 {
     if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
         handleError("fcntl Error");
-}
-
-void printEventTypes(const std::vector<struct kevent> &change_list)
-{
-    std::cout << "CHANGE LIST" << std::endl;
-    for (int i = 0; i < (int)change_list.size(); i++)
-    {
-        struct kevent kev = change_list[i];
-        std::cout << "Event for fd " << kev.ident << ": ";
-
-        // Check the event filter
-        switch (kev.filter)
-        {
-        case EVFILT_READ:
-            std::cout << "READ";
-            break;
-        case EVFILT_WRITE:
-            std::cout << "WRITE";
-            break;
-        default:
-            std::cout << "UNKNOWN";
-            break;
-        }
-
-        // Check the event flags
-        std::cout << " (";
-        if (kev.flags & EV_ADD)
-            std::cout << "ADD";
-        if (kev.flags & EV_DELETE)
-            std::cout << "DELETE";
-        std::cout << ")";
-
-        std::cout << std::endl;
-    }
 }

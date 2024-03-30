@@ -18,33 +18,8 @@ ConfigManager::ConfigManager(int argc, char **argv)
     startKqueue();
 }
 
-void printEventTypesList(struct kevent *event_list, int new_events)
-{
-    std::cout << "EVENTLIST" << std::endl;
-    for (int i = 0; i < new_events; i++)
-    {
-        struct kevent kev = event_list[i];
-        std::cout << "Event for fd " << kev.ident << ": ";
-        switch (kev.filter)
-        {
-        case EVFILT_READ:
-            std::cout << "READ";
-            break;
-        case EVFILT_WRITE:
-            std::cout << "WRITE";
-            break;
-        default:
-            std::cout << "UNKNOWN";
-            break;
-        }
-        std::cout << std::endl;
-    }
-}
-
 void ConfigManager::routine()
 {
-    printEventTypes(change_list);
-
     struct kevent event_list[8];
     for (size_t i = 0; i < change_list.size();)
     {
@@ -55,7 +30,6 @@ void ConfigManager::routine()
     }
     int new_events = kevent(kqueueFd, &change_list[0], change_list.size(), event_list, 8, NULL);
 
-    printEventTypesList(event_list, new_events);
     change_list.clear();
     for (int i = 0; i < new_events; i++)
     {
@@ -81,7 +55,6 @@ void ConfigManager::clearMember(int clientFd)
     if (fdNicknameMap.find(clientFd) != fdNicknameMap.end())
     {
         std::string nickname = fdNicknameMap[clientFd];
-        // 참여하고 있는 채널에서 나가기
         std::set<std::string> &channeNameSet = memberMap[nickname].memberChannelSet;
         std::set<std::string>::iterator it;
         for (it = channeNameSet.begin(); it != channeNameSet.end(); it++)
@@ -89,11 +62,9 @@ void ConfigManager::clearMember(int clientFd)
             channelMap[*it].memberNickSet.erase(nickname);
             channelMap[*it].operatorNickSet.erase(nickname);
         }
-        // 초대받은 채널에서 삭제
         std::set<std::string> &invitedChannelSet = memberMap[nickname].invitedChannelSet;
         for (it = invitedChannelSet.begin(); it != invitedChannelSet.end(); it++)
             channelMap[*it].invitedMemberSet.erase(nickname);
-        // 멤버 삭제
         memberMap.erase(nickname);
         fdNicknameMap.erase(clientFd);
     }
@@ -101,7 +72,6 @@ void ConfigManager::clearMember(int clientFd)
     {
         unregisterMemberMap.erase(clientFd);
     }
-    std::cout << "client disconnect " << clientFd << "\n";
     return;
 }
 
@@ -111,10 +81,6 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
     if (spiltMessage.size() == 0)
         return;
 
-    for (int i = 0; i < (int)spiltMessage.size(); i++)
-        std::cout << i << " : ||" << spiltMessage[i] << "||" << std::endl;
-
-    // case Insensitive하게 변경해야함 -> 지금은 대문자 or 소문자임
     std::string command = spiltMessage[0];
     if (command.compare("PASS") == 0 || command.compare("pass") == 0)
         authenticateUser(spiltMessage, clientFd);
@@ -149,7 +115,6 @@ void ConfigManager::processMessageBuffer(std::string &clientMsg, int clientFd)
     {
         size_t idx = clientMsg.find("\r\n");
         size_t secondIdx = clientMsg.find("\n");
-        std::cout << clientMsg;
         if (idx != std::string::npos)
         {
             std::string message = clientMsg.substr(0, idx);
@@ -180,7 +145,6 @@ void ConfigManager::handleReadEvent(struct kevent *curr_event)
     if ((int)curr_event->ident == listenFd)
     {
         int clientSocket = accept(listenFd, NULL, NULL);
-        std::cout << "client " << clientSocket << "is connected\n";
         makeNonBlock(clientSocket);
         setReadEvent(clientSocket);
         clientsToServerMsg[clientSocket] = "";
@@ -195,7 +159,6 @@ void ConfigManager::handleReadEvent(struct kevent *curr_event)
         if (n != 0)
         {
             clientsToServerMsg[clientSocket] += std::string(buf, n);
-            std::cout << "client buf : " << clientsToServerMsg[clientSocket];
             processMessageBuffer(clientsToServerMsg[clientSocket], clientSocket);
         }
         if (curr_event->flags & EV_EOF)
@@ -210,8 +173,6 @@ void ConfigManager::handleWriteEvent(struct kevent *curr_event)
     if (serverToClientMsg.find(curr_event->ident) != serverToClientMsg.end())
     {
         int clientSocket = curr_event->ident;
-
-        // 쓸수있는 데이터가 몇 바이트인지알 수 있다. 추후 처리 고려(한번에 데이터 다 못보냈을때)
         int n = write(clientSocket, serverToClientMsg[clientSocket].data(), serverToClientMsg[clientSocket].size());
         if (n < (int)serverToClientMsg[clientSocket].size())
             serverToClientMsg[clientSocket] = serverToClientMsg[clientSocket].substr(n);

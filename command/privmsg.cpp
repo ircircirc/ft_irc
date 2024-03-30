@@ -1,17 +1,5 @@
 #include "../ConfigManager.hpp"
 
-// 자신을 제외한 채널 멤버에게 전송
-// PRIVMSG #42seoul :hello my name is yw3
-// :yw3!root@127.0.0.1 PRIVMSG #42seoul :hello my name is yw3
-// :yw3!root@127.0.0.1 PRIVMSG #42seoul :hello my name is yw3
-
-// 등록되지 않은 채널에 전송
-// :irc.local 404 kkk #42seoul :You cannot send external messages to this channel whilst the +n (noextmsg) mode is set.
-
-// 채널 없음
-// privmsg #hi : hello
-// :irc.local 403 kkk #hi :No such channel
-
 static std::string makeMsg(std::string &nickname, std::string &username, std::string &hostname, std::string targetName, std::vector<std::string> &commandAndParams)
 {
     std::string msg;
@@ -31,14 +19,12 @@ void ConfigManager::sendChannel(std::vector<std::string> &commandAndParams, int 
 {
     std::string channelName = commandAndParams[1].substr(1);
     std::string &nickname = fdNicknameMap[clientFd];
-    // 채널을 찾을 수 없으면
     if (channelMap.find(channelName) == channelMap.end())
     {
         serverToClientMsg[clientFd] += ":irc.local 403 " + nickname + " #" + channelName + "  :No such channel\r\n";
         setWriteEvent(clientFd);
         return;
     }
-    // 채널에 참여하고 있지 않으면
     if (channelMap[channelName].memberNickSet.find(nickname) == channelMap[channelName].memberNickSet.end())
     {
         serverToClientMsg[clientFd] += ":irc.local 403 " + nickname + " #" + channelName + "  :Cannot send to channel\r\n";
@@ -50,7 +36,6 @@ void ConfigManager::sendChannel(std::vector<std::string> &commandAndParams, int 
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)
     {
         int channelMemberFd = memberMap[*it].fd;
-        // 자기자신에게 메시지를 안보냄
         if ((*it).compare(nickname) == 0)
             continue;
         serverToClientMsg[channelMemberFd] += msg;
@@ -60,7 +45,6 @@ void ConfigManager::sendChannel(std::vector<std::string> &commandAndParams, int 
 
 void ConfigManager::sendDM(std::vector<std::string> &commandAndParams, int clientFd)
 {
-    // 메시지를 받을 사람의 닉네임을 찾지 못했을때
     std::string &targetNick = commandAndParams[1];
     if (memberMap.find(targetNick) == memberMap.end())
     {
@@ -85,7 +69,6 @@ void ConfigManager::sendPrivateMsg(std::vector<std::string> &commandAndParams, i
         return;
     }
 
-    // 등록된 멤버가 아닐때
     if (fdNicknameMap.find(clientFd) == fdNicknameMap.end())
     {
         serverToClientMsg[clientFd] += ":irc.local 451 * PRIVMSG :You have not registered.\r\n";

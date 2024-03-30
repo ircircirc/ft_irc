@@ -1,22 +1,5 @@
 #include "../ConfigManager.hpp"
 
-// 채널이 없는경우
-// INVITE a hi
-// :irc.local 403 c hi :No such channel
-
-// c가 a를 초대 -> a에게 초대 메시지 보냄
-//  :irc.local 341 c a :#hi
-//  :c!root@127.0.0.1 INVITE a :#hi
-
-// 운영자 아니면 초대불가능
-// INVITE b #aa
-// :irc.local 482 c #aa :You must be a channel op or higher to send an invite.
-
-// 이미 방에 입장한 사용자
-// :irc.local 443 a a #aa :is already on channel
-// 없는 사용자
-// :irc.local 401 a bb :No such nick
-
 void ConfigManager::inviteMember(std::vector<std::string> &commandAndParams, int clientFd)
 {
     if (commandAndParams.size() < 3)

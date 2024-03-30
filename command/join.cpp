@@ -1,29 +1,5 @@
 #include "../ConfigManager.hpp"
 
-// 채널에 처믕 입장하는 사람에게 보내는 메시지임 -> @가 오퍼레이터 인듯 -> 추후 오퍼레이터 처리할것
-// :irc.local 353 b = #hello :@a b
-// :irc.local 366 b #hello :End of /NAMES list
-
-// 실제 예시
-
-// :yw!root@127.0.0.1 JOIN :#42seoul
-// :irc.local 353 yw = #42seoul :@yw
-// :irc.local 366 yw #42seoul :End of /NAMES list.
-
-// :kk!root@127.0.0.1 JOIN :#42seoul
-// :irc.local 353 kk = #42seoul :@yw kk
-// :irc.local 366 kk #42seoul :End of /NAMES list.
-
-// :yw! root@root JOIN :#42seoul
-// :irc.local 353 yw = #42seoul :yw
-// :irc.local 366 yw #42seoul :End of /NAMES list
-
-// :kk! root@root JOIN :#42seoul
-
-// :irc.local 353 kk = #42seoul :kk yw
-// :irc.local 366 kk #42seoul :End of /NAMES list
-// :kk! root@root JOIN :#42seoul
-
 static std::string getChannelMemberList(std::set<std::string> &operatorNickSet, std::set<std::string> &memberNickSet)
 {
     std::string channelMemberList = "";
@@ -41,17 +17,14 @@ static std::string getChannelMemberList(std::set<std::string> &operatorNickSet, 
 void ConfigManager::join(int clientFd, const std::string &channelName, std::vector<std::string> &commandAndParams)
 {
     std::string clientNick = fdNicknameMap[clientFd];
-    // 채널이 만들어 져야할 경우
     if (channelMap.find(channelName) == channelMap.end())
     {
         channelMap[channelName] = Channel(channelName);
         channelMap[channelName].operatorNickSet.insert(clientNick);
     }
-    // 이미 가입한 채널에 join할 경우
     if (channelMap[channelName].memberNickSet.find(clientNick) != channelMap[channelName].memberNickSet.end())
         return;
 
-    // 초대 받았으면 바로 입장
     if (channelMap[channelName].invitedMemberSet.find(clientNick) != channelMap[channelName].invitedMemberSet.end())
     {
         channelMap[channelName].invitedMemberSet.erase(clientNick);
@@ -59,14 +32,12 @@ void ConfigManager::join(int clientFd, const std::string &channelName, std::vect
     }
     else
     {
-        // 초대전용인 경우 퇴장
         if (channelMap[channelName].inviteOnly)
         {
             serverToClientMsg[clientFd] += ":irc.local 473 " + clientNick + " #" + channelName + " :Cannot join channel (invite only)\r\n";
             setWriteEvent(clientFd);
             return;
         }
-        // 키 모드면 키 확인
         if (channelMap[channelName].useKeyOnly)
         {
             if (commandAndParams.size() < 3 || commandAndParams[2].compare(channelMap[channelName].key) != 0)
@@ -76,7 +47,6 @@ void ConfigManager::join(int clientFd, const std::string &channelName, std::vect
                 return;
             }
         }
-        // 초대전용 아니면서 제한 모드면 제한인원 확인
         if (channelMap[channelName].isLimit)
         {
             if ((int)channelMap[channelName].memberNickSet.size() >= channelMap[channelName].limitCount)
@@ -90,9 +60,6 @@ void ConfigManager::join(int clientFd, const std::string &channelName, std::vect
 
     memberMap[clientNick].memberChannelSet.insert(channelName);
     channelMap[channelName].memberNickSet.insert(clientNick);
-
-    // 채널에 참여한 인원에게 공통으로 알리는 메시지
-    //  std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@" + memberMap[clientNick].hostname + " JOIN :#" + channelName + "\r\n";
     std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@" + memberMap[clientNick].hostname + " JOIN :#" + channelName + "\r\n";
     std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)

@@ -1,14 +1,3 @@
-
-// MODE #Spaceship -t
-// :Alien!root@127.0.0.1 MODE #Spaceship :-t
-// :Alien!root@127.0.0.1 MODE #Spaceship :-t
-// TOPIC #Spaceship :love
-
-// MODE #Spaceship +t
-// :Alien!root@127.0.0.1 MODE #Spaceship :+t
-// TOPIC #Spaceship :hppay
-// :irc.local 482 Pony #Spaceship :You must be a channel op or higher to change the topic.
-
 #include "../ConfigManager.hpp"
 
 void ConfigManager::processModeTopic(int clientFd, bool sign, std::string &channelName)
