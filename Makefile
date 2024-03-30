@@ -2,7 +2,7 @@ CC = c++
 CFLAGS = -Wall -Wextra -Werror -std=c++98
 NAME = ircserv
 
-SRCS = main.cpp ConfigManager.cpp IrcMember.cpp Channel.cpp \
+SRCS = main.cpp ConfigManager.cpp IrcMember.cpp Channel.cpp UnregisterMember.cpp\
        command/pass.cpp command/nick.cpp command/user.cpp command/privmsg.cpp \
        command/register.cpp command/quit.cpp command/PingPong.cpp command/join.cpp \
        command/Part.cpp command/kick.cpp command/mode.cpp command/invite.cpp \

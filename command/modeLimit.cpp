@@ -39,12 +39,12 @@ void ConfigManager::processModeLimit(int clientFd, bool sign, std::string &chann
         }
         channelMap[channelName].isLimit = true;
         channelMap[channelName].limitCount = std::atoi(commandAndParams[3].c_str());
-        
+
         std::ostringstream oss;
         oss << channelMap[channelName].limitCount;
         std::string limitStr = oss.str();
 
-        std::string msg = ":" + fdNicknameMap[clientFd] + "!" + memberMap[fdNicknameMap[clientFd]].username + "@127.0.0.1 MODE #" + channelName + " " + "+l :" + limitStr + "\r\n";
+        std::string msg = ":" + fdNicknameMap[clientFd] + "!" + memberMap[fdNicknameMap[clientFd]].username + "@" + memberMap[fdNicknameMap[clientFd]].hostname + " MODE #" + channelName + " " + "+l :" + limitStr + "\r\n";
         std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
         for (; it != channelMap[channelName].memberNickSet.end(); ++it)
         {

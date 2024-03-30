@@ -1,6 +1,8 @@
 #include "IrcMember.hpp"
 
-IrcMember::IrcMember() {}
+IrcMember::IrcMember() {
+    this->pendingCloseSocket = false;
+}
 
 IrcMember::IrcMember(UnregisterMember &unregisterMember, int fd)
 {

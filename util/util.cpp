@@ -33,10 +33,13 @@ void makeNonBlock(int fd)
 
 void printEventTypes(const std::vector<struct kevent> &change_list)
 {
+    std::cout << "CHANGE LIST" << std::endl;
     for (int i = 0; i < (int)change_list.size(); i++)
     {
         struct kevent kev = change_list[i];
         std::cout << "Event for fd " << kev.ident << ": ";
+
+        // Check the event filter
         switch (kev.filter)
         {
         case EVFILT_READ:
@@ -49,6 +52,15 @@ void printEventTypes(const std::vector<struct kevent> &change_list)
             std::cout << "UNKNOWN";
             break;
         }
+
+        // Check the event flags
+        std::cout << " (";
+        if (kev.flags & EV_ADD)
+            std::cout << "ADD";
+        if (kev.flags & EV_DELETE)
+            std::cout << "DELETE";
+        std::cout << ")";
+
         std::cout << std::endl;
     }
 }

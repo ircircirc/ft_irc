@@ -12,10 +12,10 @@
 // privmsg #hi : hello
 // :irc.local 403 kkk #hi :No such channel
 
-static std::string makeMsg(std::string &nickname, std::string &username, std::string targetName, std::vector<std::string> &commandAndParams)
+static std::string makeMsg(std::string &nickname, std::string &username, std::string &hostname, std::string targetName, std::vector<std::string> &commandAndParams)
 {
     std::string msg;
-    msg += std::string(":" + nickname + "!" + username + "@" + "127.0.0.1" + " ");
+    msg += std::string(":" + nickname + "!" + username + "@" + hostname + " ");
     msg += std::string("PRIVMSG " + targetName + " ");
     for (int i = 2; i < (int)commandAndParams.size(); i++)
     {
@@ -46,7 +46,7 @@ void ConfigManager::sendChannel(std::vector<std::string> &commandAndParams, int 
         return;
     }
     std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
-    std::string msg = makeMsg(nickname, memberMap[nickname].username, ("#" + channelName), commandAndParams);
+    std::string msg = makeMsg(nickname, memberMap[nickname].username, memberMap[nickname].hostname, ("#" + channelName), commandAndParams);
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)
     {
         int channelMemberFd = memberMap[*it].fd;
@@ -72,7 +72,7 @@ void ConfigManager::sendDM(std::vector<std::string> &commandAndParams, int clien
     IrcMember &sourceMember = memberMap[fdNicknameMap[clientFd]];
     IrcMember &targetMember = memberMap[targetNick];
 
-    serverToClientMsg[targetMember.fd] += makeMsg(sourceMember.nickname, sourceMember.username, targetMember.nickname, commandAndParams);
+    serverToClientMsg[targetMember.fd] += makeMsg(sourceMember.nickname, sourceMember.username, sourceMember.hostname, targetMember.nickname, commandAndParams);
     setWriteEvent(targetMember.fd);
 }
 

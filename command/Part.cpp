@@ -66,12 +66,11 @@ void ConfigManager::part(int clientFd, const std::string &channelName)
 		setWriteEvent(channelMemberFd);
 	}
 	
+	channelMap[channelName].operatorNickSet.erase(clientNick);
 	channelMap[channelName].memberNickSet.erase(clientNick);
 	memberMap[clientNick].memberChannelSet.erase(channelName);
-	// if (channelMap[channelName].memberNickSet.empty())	// 마지막 인원이 나갈 때
-    // {
-    //     channelMap.erase(channelName);
-	// }
-
-	
+	if (channelMap[channelName].memberNickSet.empty())	// 마지막 인원이 나갈 때
+    {
+        channelMap.erase(channelName);
+	}
 }

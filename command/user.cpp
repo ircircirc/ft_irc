@@ -22,6 +22,5 @@ void ConfigManager::registerUser(std::vector<std::string> &commandAndParams, int
     unregisterMember.hostname = commandAndParams[2];
     unregisterMember.servername = commandAndParams[3];
     unregisterMember.realname = commandAndParams[4];
-    // 현재 여기서 에러나면(PASSWORD 불일치해 서버가 close했을때) 서버 꺼지는 상태
     checkRegister(clientFd);
 }

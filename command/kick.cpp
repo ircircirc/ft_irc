@@ -68,7 +68,7 @@ void ConfigManager::kickMember(std::vector<std::string> &commandAndParams, int c
     }
 
     std::string nick = fdNicknameMap[clientFd];
-    std::string kickMsg = ":" + nick + "!" + memberMap[nick].username + "@127.0.0.1 KICK #" + channelName + " " + targetNick + " :" + makeMsg(commandAndParams) + "\r\n";
+    std::string kickMsg = ":" + nick + "!" + memberMap[nick].username + "@" + memberMap[nick].hostname + " KICK #" + channelName + " " + targetNick + " :" + makeMsg(commandAndParams) + "\r\n";
 
     std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)

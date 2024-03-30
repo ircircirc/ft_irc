@@ -4,7 +4,6 @@
 // :Alien!root@127.0.0.1 MODE #Spaceship :-t
 // TOPIC #Spaceship :love
 
-
 // MODE #Spaceship +t
 // :Alien!root@127.0.0.1 MODE #Spaceship :+t
 // TOPIC #Spaceship :hppay
@@ -20,7 +19,7 @@ void ConfigManager::processModeTopic(int clientFd, bool sign, std::string &chann
     char signChar = '+';
     if (!sign)
         signChar = '-';
-    std::string msg = ":" + fdNicknameMap[clientFd] + "!" + memberMap[fdNicknameMap[clientFd]].username + "@127.0.0.1 MODE #" + channelName + " :" + signChar + "t\r\n";
+    std::string msg = ":" + fdNicknameMap[clientFd] + "!" + memberMap[fdNicknameMap[clientFd]].username + "@" + memberMap[fdNicknameMap[clientFd]].hostname + " MODE #" + channelName + " :" + signChar + "t\r\n";
     std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)
     {

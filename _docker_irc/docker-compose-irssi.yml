@@ -15,11 +15,11 @@ services:
 
 #################################################
 # irssi 패킷 관찰
-# docker exec -it irssi_client bash 
+# docker exec -it irssi_client bash
 # tcpflow port 12345 -c
 
 # irssi 클라이언트 실행 -> 우리서버 연결
-# docker exec -it irssi_client bash 
+# docker exec -it irssi_client bash
 # irssi
 # /connect -nocap host.docker.internal 12345 password
 

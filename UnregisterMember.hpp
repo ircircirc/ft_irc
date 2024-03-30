@@ -6,7 +6,7 @@
 class UnregisterMember
 {
 public:
-    UnregisterMember(){};
+    UnregisterMember();
     std::string password;
     std::string nickname;
     std::string username;

@@ -69,7 +69,6 @@ void ConfigManager::topic(int clientFd, const std::vector<std::string> &commandA
 		if (i < (int)commandAndParams.size() - 1)
 			newTopicMsg += " ";
 	}
-	std::cout << "확인!! :" << newTopicMsg << std::endl;
 
 	std::string displayMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@" + memberMap[clientNick].hostname + " TOPIC #" + channelName + " " + newTopicMsg + "\r\n";
 	std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();

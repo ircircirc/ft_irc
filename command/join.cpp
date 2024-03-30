@@ -93,7 +93,7 @@ void ConfigManager::join(int clientFd, const std::string &channelName, std::vect
 
     // 채널에 참여한 인원에게 공통으로 알리는 메시지
     //  std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@" + memberMap[clientNick].hostname + " JOIN :#" + channelName + "\r\n";
-    std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@127.0.0.1 JOIN :#" + channelName + "\r\n";
+    std::string joinMsg = ":" + clientNick + "!" + memberMap[clientNick].username + "@" + memberMap[clientNick].hostname + " JOIN :#" + channelName + "\r\n";
     std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)
     {

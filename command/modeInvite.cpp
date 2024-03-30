@@ -8,7 +8,7 @@ void ConfigManager::processModeInvite(int clientFd, bool sign, std::string &chan
     char signChar = '+';
     if (!sign)
         signChar = '-';
-    std::string msg = ":" + fdNicknameMap[clientFd] + "!" + memberMap[fdNicknameMap[clientFd]].username + "@127.0.0.1 MODE #" + channelName + " :" + signChar + "i\r\n";
+    std::string msg = ":" + fdNicknameMap[clientFd] + "!" + memberMap[fdNicknameMap[clientFd]].username + "@" + memberMap[fdNicknameMap[clientFd]].hostname + " MODE #" + channelName + " :" + signChar + "i\r\n";
     std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)
     {

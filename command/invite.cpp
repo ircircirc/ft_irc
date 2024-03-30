@@ -68,6 +68,6 @@ void ConfigManager::inviteMember(std::vector<std::string> &commandAndParams, int
     memberMap[targetNick].invitedChannelSet.insert(channelName);
 
     IrcMember &sender = memberMap[fdNicknameMap[clientFd]];
-    serverToClientMsg[memberMap[targetNick].fd] += ":" + sender.nickname + "!" + sender.username + "@127.0.0.1 INVITE " + targetNick + " :#" + channelName + "\r\n";
+    serverToClientMsg[memberMap[targetNick].fd] += ":" + sender.nickname + "!" + sender.username + "@" + sender.hostname + " INVITE " + targetNick + " :#" + channelName + "\r\n";
     setWriteEvent(memberMap[targetNick].fd);
 }

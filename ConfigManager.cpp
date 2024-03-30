@@ -18,14 +18,44 @@ ConfigManager::ConfigManager(int argc, char **argv)
     startKqueue();
 }
 
+void printEventTypesList(struct kevent *event_list, int new_events)
+{
+    std::cout << "EVENTLIST" << std::endl;
+    for (int i = 0; i < new_events; i++)
+    {
+        struct kevent kev = event_list[i];
+        std::cout << "Event for fd " << kev.ident << ": ";
+        switch (kev.filter)
+        {
+        case EVFILT_READ:
+            std::cout << "READ";
+            break;
+        case EVFILT_WRITE:
+            std::cout << "WRITE";
+            break;
+        default:
+            std::cout << "UNKNOWN";
+            break;
+        }
+        std::cout << std::endl;
+    }
+}
+
 void ConfigManager::routine()
 {
-    // 현재 이벤트 출력 하는 함수
     printEventTypes(change_list);
+
     struct kevent event_list[8];
+    for (size_t i = 0; i < change_list.size();)
+    {
+        if (change_list[i].filter == EVFILT_WRITE && serverToClientMsg.find(change_list[i].ident) == serverToClientMsg.end())
+            change_list.erase(change_list.begin() + i);
+        else
+            i++;
+    }
     int new_events = kevent(kqueueFd, &change_list[0], change_list.size(), event_list, 8, NULL);
-    if (new_events == -1)
-        handleError("kevent");
+
+    printEventTypesList(event_list, new_events);
     change_list.clear();
     for (int i = 0; i < new_events; i++)
     {
@@ -34,7 +64,7 @@ void ConfigManager::routine()
         {
             int error_code = curr_event->data;
             std::cout << strerror(error_code) << std::endl;
-            handleError("EV_ERROR");
+            continue;
         }
         if (curr_event->filter == EVFILT_READ)
             handleReadEvent(curr_event);
@@ -114,6 +144,7 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
 
 void ConfigManager::processMessageBuffer(std::string &clientMsg, int clientFd)
 {
+
     while (1)
     {
         size_t idx = clientMsg.find("\r\n");
@@ -181,24 +212,33 @@ void ConfigManager::handleWriteEvent(struct kevent *curr_event)
         int clientSocket = curr_event->ident;
 
         // 쓸수있는 데이터가 몇 바이트인지알 수 있다. 추후 처리 고려(한번에 데이터 다 못보냈을때)
-        write(clientSocket, serverToClientMsg[clientSocket].data(), serverToClientMsg[clientSocket].size());
-        serverToClientMsg[curr_event->ident].clear();
+        int n = write(clientSocket, serverToClientMsg[clientSocket].data(), serverToClientMsg[clientSocket].size());
+        if (n < (int)serverToClientMsg[clientSocket].size())
+            serverToClientMsg[clientSocket] = serverToClientMsg[clientSocket].substr(n);
+        else
+            serverToClientMsg[clientSocket].clear();
 
-        // 메시지 보내고 연결 끊어야 할 경우 체크
-        if (unregisterMemberMap.find(clientSocket) != unregisterMemberMap.end())
+        if (serverToClientMsg[curr_event->ident].size() == 0)
         {
-            if (unregisterMemberMap[clientSocket].pendingCloseSocket)
-                clearMember(clientSocket);
-            return;
+            if (unregisterMemberMap.find(clientSocket) != unregisterMemberMap.end())
+            {
+                if (unregisterMemberMap[clientSocket].pendingCloseSocket)
+                {
+                    clearMember(clientSocket);
+                    return;
+                }
+            }
+            if (fdNicknameMap.find(clientSocket) != fdNicknameMap.end())
+            {
+                if (memberMap[fdNicknameMap[clientSocket]].pendingCloseSocket)
+                {
+                    clearMember(clientSocket);
+                    return;
+                }
+            }
+            EV_SET(&tempEvent, clientSocket, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+            change_list.push_back(tempEvent);
         }
-        if (fdNicknameMap.find(clientSocket) != fdNicknameMap.end())
-        {
-            if (memberMap[fdNicknameMap[clientSocket]].pendingCloseSocket)
-                clearMember(clientSocket);
-            return;
-        }
-        EV_SET(&tempEvent, clientSocket, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
-        change_list.push_back(tempEvent);
     }
 }
 
@@ -222,7 +262,6 @@ void ConfigManager::cleanup()
         close(listenFd);
     for (std::map<int, std::string>::iterator it = clientsToServerMsg.begin(); it != clientsToServerMsg.end(); ++it)
     {
-        std::cout << it->first << std::endl;
         close(it->first);
     }
 }

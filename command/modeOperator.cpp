@@ -53,7 +53,7 @@ void ConfigManager::processModeOperator(int clientFd, bool sign, std::string &ch
     char signChar = '+';
     if (!sign)
         signChar = '-';
-    std::string msg = ":" + fdNicknameMap[clientFd] + "!" + memberMap[fdNicknameMap[clientFd]].username + "@127.0.0.1 MODE #" + channelName + " " + signChar + "o :" + targetNick + "\r\n";
+    std::string msg = ":" + fdNicknameMap[clientFd] + "!" + memberMap[fdNicknameMap[clientFd]].username + "@" + memberMap[fdNicknameMap[clientFd]].hostname + " MODE #" + channelName + " " + signChar + "o :" + targetNick + "\r\n";
     std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)
     {

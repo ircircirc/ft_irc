@@ -45,7 +45,7 @@ void ConfigManager::processModeKey(int clientFd, bool sign, std::string &channel
         channelMap[channelName].key = key;
     channelMap[channelName].useKeyOnly = sign;
 
-    std::string msg = ":" + fdNicknameMap[clientFd] + "!" + memberMap[fdNicknameMap[clientFd]].username + "@127.0.0.1 MODE #" + channelName + " :" + signChar + "k :" + key + "\r\n";
+    std::string msg = ":" + fdNicknameMap[clientFd] + "!" + memberMap[fdNicknameMap[clientFd]].username + "@" + memberMap[fdNicknameMap[clientFd]].hostname + " MODE #" + channelName + " :" + signChar + "k :" + key + "\r\n";
     std::set<std::string>::iterator it = channelMap[channelName].memberNickSet.begin();
     for (; it != channelMap[channelName].memberNickSet.end(); ++it)
     {
