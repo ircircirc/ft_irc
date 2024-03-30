@@ -19,7 +19,7 @@ void ConfigManager::partChannel(std::vector<std::string> &commandAndParams, int 
 	// part 문법 오류 확인
 	std::string channels = commandAndParams[1];
 	std::vector<std::string> splitChannels = split(channels, ",");	// ','을 구분자로 하여 part하고자 하는 channel을 추가할 수 있다. (복수의 channel에서 part)
-	for (int i = 0; i < splitChannels.size(); i++)
+	for (int i = 0; i < (int)splitChannels.size(); i++)
 	{
 		if (splitChannels[i].size() == 0)	// 인자가 빈문자열인 경우 continue. 
 			continue;

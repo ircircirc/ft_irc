@@ -24,7 +24,5 @@ void ConfigManager::PingPongInteraction(const std::vector<std::string>& splitMes
 		response = "PONG " + splitMessage[1] + " " + splitMessage[2] + "\r\n";
 	}
 	serverToClientMsg[clientFd] += response;
-
-    struct kevent tempEvent;
 	setWriteEvent(clientFd);
 }

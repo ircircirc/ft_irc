@@ -17,10 +17,10 @@ static std::string makeMsg(std::string &nickname, std::string &username, std::st
     std::string msg;
     msg += std::string(":" + nickname + "!" + username + "@" + "127.0.0.1" + " ");
     msg += std::string("PRIVMSG " + targetName + " ");
-    for (int i = 2; i < commandAndParams.size(); i++)
+    for (int i = 2; i < (int)commandAndParams.size(); i++)
     {
         msg += commandAndParams[i];
-        if (i != commandAndParams.size() - 1)
+        if (i != (int)commandAndParams.size() - 1)
             msg += " ";
     }
     msg += "\r\n";

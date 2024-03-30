@@ -14,12 +14,12 @@
 static std::string makeMsg(std::vector<std::string> &commandAndParams)
 {
     std::string msg;
-    for (int i = 3; i < commandAndParams.size(); i++)
+    for (int i = 3; i < (int)commandAndParams.size(); i++)
     {
         if (i == 3 && commandAndParams[3].size() != 0 && commandAndParams[3][0] == ':')
             commandAndParams[3] = commandAndParams[3].substr(1);
         msg += commandAndParams[i];
-        if (i != commandAndParams.size() - 1)
+        if (i != (int)commandAndParams.size() - 1)
             msg += " ";
     }
     msg += "\r\n";

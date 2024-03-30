@@ -17,7 +17,6 @@ void ConfigManager::registerNick(std::vector<std::string> &commandAndParams, int
         return;
     }
 
-    // 잘못된 닉네임 형식이 있다. 하지만 이거를 구현해야할까? -> 일단 패스
     std::string nickname = commandAndParams[1];
     if (memberMap.find(nickname) != memberMap.end())
     {
@@ -25,6 +24,18 @@ void ConfigManager::registerNick(std::vector<std::string> &commandAndParams, int
         setWriteEvent(clientFd);
         return;
     }
+
+    // 등록하지 않은 회원의 닉네임이 같을때 해당 회원의 닉네임을 초기화함
+    for (std::map<int, UnregisterMember>::iterator it = unregisterMemberMap.begin(); it != unregisterMemberMap.end(); ++it)
+    {
+        if (it->second.nickname.compare(nickname) == 0)
+        {
+            serverToClientMsg[it->first] += ":irc.local 433 " + nickname + " " + nickname + " :Nickname overruled.\r\n";
+            setWriteEvent(it->first);
+            it->second.nickname.clear();
+        }
+    }
+
     unregisterMemberMap[clientFd].nickname = nickname;
     checkRegister(clientFd);
 }

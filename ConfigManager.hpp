@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cctype>
 #include <sstream>
+#include <csignal>
 
 class ConfigManager
 {
@@ -51,7 +52,6 @@ private:
     void processTopic(std::vector<std::string> &commandAndParams, int clientFd);
     void topic(int clientFd, const std::vector<std::string> &commandAndParams, const std::string &channelName);
 
-
     void checkRegister(int clientFd);
     void welcomeMember(int clientFd);
     void clearMember(int clientFd);
@@ -64,6 +64,7 @@ private:
     void handleWriteEvent(struct kevent *curr_event);
     void setReadEvent(int fd);
     void setWriteEvent(int fd);
+    void cleanup();
 
     int port;
     int listenFd;

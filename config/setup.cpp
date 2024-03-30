@@ -2,7 +2,7 @@
 
 bool isValidNum(std::string arg)
 {
-    for (int i = 0; i < arg.size(); i++)
+    for (int i = 0; i < (int)arg.size(); i++)
     {
         if (!std::isdigit(arg[i]))
             return false;

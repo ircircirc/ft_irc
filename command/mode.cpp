@@ -52,7 +52,7 @@ void ConfigManager::processMode(std::vector<std::string> &commandAndParams, int 
         sign = false;
     if (modes[0] == '+' || modes[0] == '-')
         modes = modes.substr(1);
-    for (int i = 0; i < modes.size(); i++)
+    for (int i = 0; i < (int)modes.size(); i++)
     {
         if (modes[i] == 'i')
             processModeInvite(clientFd, sign, channelName);

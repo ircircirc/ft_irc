@@ -24,7 +24,7 @@
 // :irc.local 366 kk #42seoul :End of /NAMES list
 // :kk! root@root JOIN :#42seoul
 
-static std::string getChannelMemberList(std::set<std::string> &operatorNickSet, std::set<std::string> &memberNickSet, std::map<std::string, IrcMember> &memberMap)
+static std::string getChannelMemberList(std::set<std::string> &operatorNickSet, std::set<std::string> &memberNickSet)
 {
     std::string channelMemberList = "";
     std::set<std::string>::iterator it = memberNickSet.begin();
@@ -79,7 +79,7 @@ void ConfigManager::join(int clientFd, const std::string &channelName, std::vect
         // 초대전용 아니면서 제한 모드면 제한인원 확인
         if (channelMap[channelName].isLimit)
         {
-            if (channelMap[channelName].memberNickSet.size() >= channelMap[channelName].limitCount)
+            if ((int)channelMap[channelName].memberNickSet.size() >= channelMap[channelName].limitCount)
             {
                 serverToClientMsg[clientFd] += ":irc.local 471 " + clientNick + " #" + channelName + " :Cannot join channel (channel is full)\r\n";
                 setWriteEvent(clientFd);
@@ -102,7 +102,7 @@ void ConfigManager::join(int clientFd, const std::string &channelName, std::vect
         setWriteEvent(channelMemberFd);
     }
 
-    std::string firstMsg = ":irc.local 353 " + clientNick + " = #" + channelName + " :" + getChannelMemberList(channelMap[channelName].operatorNickSet, channelMap[channelName].memberNickSet, memberMap) + "\r\n";
+    std::string firstMsg = ":irc.local 353 " + clientNick + " = #" + channelName + " :" + getChannelMemberList(channelMap[channelName].operatorNickSet, channelMap[channelName].memberNickSet) + "\r\n";
     firstMsg += ":irc.local 366 " + clientNick + " #" + channelName + " :End of /NAMES list.\r\n";
     serverToClientMsg[clientFd] += firstMsg;
 }
@@ -125,7 +125,7 @@ void ConfigManager::joinChannel(std::vector<std::string> &commandAndParams, int 
 
     std::string &channels = commandAndParams[1];
     std::vector<std::string> splitChannels = split(channels, ",");
-    for (int i = 0; i < splitChannels.size(); i++)
+    for (int i = 0; i < (int)splitChannels.size(); i++)
     {
         if (splitChannels[i].size() == 0)
             continue;

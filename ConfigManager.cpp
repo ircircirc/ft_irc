@@ -1,7 +1,18 @@
 #include "ConfigManager.hpp"
 
+static void signalHandler(int signum)
+{
+    std::cout << "Interrupt by signal" << signum << "received.\n";
+    std::exit(signum);
+}
+
 ConfigManager::ConfigManager(int argc, char **argv)
 {
+    signal(SIGINT, signalHandler);
+    signal(SIGTERM, signalHandler);
+    signal(SIGQUIT, signalHandler);
+    listenFd = -1;
+    kqueueFd = -1;
     setConifg(argc, argv);
     listenSocket();
     startKqueue();
@@ -48,11 +59,11 @@ void ConfigManager::clearMember(int clientFd)
             channelMap[*it].memberNickSet.erase(nickname);
             channelMap[*it].operatorNickSet.erase(nickname);
         }
-        //초대받은 채널에서 삭제
+        // 초대받은 채널에서 삭제
         std::set<std::string> &invitedChannelSet = memberMap[nickname].invitedChannelSet;
-        for(it = invitedChannelSet.begin(); it != invitedChannelSet.end(); it++)
+        for (it = invitedChannelSet.begin(); it != invitedChannelSet.end(); it++)
             channelMap[*it].invitedMemberSet.erase(nickname);
-        //멤버 삭제
+        // 멤버 삭제
         memberMap.erase(nickname);
         fdNicknameMap.erase(clientFd);
     }
@@ -70,7 +81,7 @@ void ConfigManager::processMessage(std::string &message, int clientFd)
     if (spiltMessage.size() == 0)
         return;
 
-    for (int i = 0; i < spiltMessage.size(); i++)
+    for (int i = 0; i < (int)spiltMessage.size(); i++)
         std::cout << i << " : ||" << spiltMessage[i] << "||" << std::endl;
 
     // case Insensitive하게 변경해야함 -> 지금은 대문자 or 소문자임
@@ -135,7 +146,7 @@ void ConfigManager::startKqueue()
 
 void ConfigManager::handleReadEvent(struct kevent *curr_event)
 {
-    if (curr_event->ident == listenFd)
+    if ((int)curr_event->ident == listenFd)
     {
         int clientSocket = accept(listenFd, NULL, NULL);
         std::cout << "client " << clientSocket << "is connected\n";
@@ -201,4 +212,17 @@ void ConfigManager::setWriteEvent(int fd)
 {
     EV_SET(&tempEvent, fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
     change_list.push_back(tempEvent);
+}
+
+void ConfigManager::cleanup()
+{
+    if (listenFd != -1)
+        close(listenFd);
+    if (kqueueFd != -1)
+        close(listenFd);
+    for (std::map<int, std::string>::iterator it = clientsToServerMsg.begin(); it != clientsToServerMsg.end(); ++it)
+    {
+        std::cout << it->first << std::endl;
+        close(it->first);
+    }
 }

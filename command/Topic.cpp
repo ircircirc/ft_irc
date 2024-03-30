@@ -63,10 +63,10 @@ void ConfigManager::topic(int clientFd, const std::vector<std::string> &commandA
 {
 	std::string clientNick = fdNicknameMap[clientFd];
 	std::string newTopicMsg;
-	for (int i = 2; i < commandAndParams.size(); i++)
+	for (int i = 2; i < (int)commandAndParams.size(); i++)
 	{
 		newTopicMsg += commandAndParams[i];
-		if (i < commandAndParams.size() - 1)
+		if (i < (int)commandAndParams.size() - 1)
 			newTopicMsg += " ";
 	}
 	std::cout << "확인!! :" << newTopicMsg << std::endl;

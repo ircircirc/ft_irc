@@ -1,5 +1,13 @@
 #include "util.hpp"
 
+void handleError(std::string errMsg)
+{
+    std::cerr << "오류 발생: " << strerror(errno) << std::endl;
+    if (!errMsg.empty()) // 빈문자열 "" 처리
+        std::cerr << errMsg << std::endl;
+    std::exit(EXIT_FAILURE);
+}
+
 std::vector<std::string> split(const std::string &str, const std::string &del)
 {
     std::vector<std::string> tokens;
@@ -17,16 +25,6 @@ std::vector<std::string> split(const std::string &str, const std::string &del)
     return tokens;
 }
 
-void handleError(std::string errMsg)
-{
-    std::cerr << "오류 발생: " << strerror(errno) << std::endl;
-    if (!errMsg.empty()) // 빈문자열 "" 처리
-        std::cerr << errMsg << std::endl;
-    else
-        std::cerr << "An unspecified error occurred." << std::endl;
-    std::exit(EXIT_FAILURE);
-}
-
 void makeNonBlock(int fd)
 {
     if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
@@ -35,7 +33,7 @@ void makeNonBlock(int fd)
 
 void printEventTypes(const std::vector<struct kevent> &change_list)
 {
-    for (int i = 0; i < change_list.size(); i++)
+    for (int i = 0; i < (int)change_list.size(); i++)
     {
         struct kevent kev = change_list[i];
         std::cout << "Event for fd " << kev.ident << ": ";
