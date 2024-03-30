@@ -20,7 +20,7 @@ bool isValidInput(int argc, char **argv)
 void ConfigManager::setConifg(int argc, char **argv)
 {
     if (!isValidInput(argc, argv))
-        handleError("invalid port input");
+        handleError("invalid input");
     port = std::atoi(argv[1]);
     password = std::string(argv[2]);
     std::cout << "포트 : " << port << " 비밀번호 : " << password << std::endl;
